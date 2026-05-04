@@ -1,5 +1,6 @@
 import streamlit as st
 
+
 def filters_ui(df):
 
     col1, col2, col3, col4 = st.columns(4)
