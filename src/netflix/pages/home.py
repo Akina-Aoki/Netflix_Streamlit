@@ -38,7 +38,7 @@ def prepare_home_data() -> pd.DataFrame:
         ordered=True,
     )
 
-    # Performance score (same logic as your project)
+    # Performance score
     df["score"] = 11 - pd.to_numeric(df["weekly_rank"], errors="coerce")
     df = df[df["score"].notna() & (df["score"] > 0)]
 
@@ -113,28 +113,22 @@ def home() -> None:
         & (df["month_name"].astype(str) == selected_month)
     ].copy()
 
+    # -------------------------
+    # CORE FIX: CORRECT AGGREGATION GRAIN
+    # -------------------------
+    agg = (
+        filtered.groupby(["show_title", "category"], as_index=False)["score"]
+        .sum()
+        .rename(columns={"score": "performance_score"})
+    )
+
+    # Apply category filter AFTER aggregation
     if selected_category != "All":
-        filtered = filtered[filtered["category"] == selected_category].copy()
+        agg = agg[agg["category"] == selected_category].copy()
 
     # -------------------------
-    # AGGREGATION (FIXED LOGIC)
+    # GLOBAL TOP 10
     # -------------------------
-    if selected_category == "All":
-        agg = (
-            filtered.groupby("show_title", as_index=False)
-            .agg(
-                performance_score=("score", "sum"),
-                category=("category", "first"),  # only for color
-            )
-        )
-    else:
-        agg = (
-            filtered.groupby(["show_title", "category"], as_index=False)["score"]
-            .sum()
-            .rename(columns={"score": "performance_score"})
-        )
-
-    # Top 10 (correct global ranking)
     chart_df = (
         agg.sort_values("performance_score", ascending=False)
         .head(10)
@@ -193,7 +187,7 @@ def home() -> None:
             st.plotly_chart(fig, use_container_width=True)
 
     # -------------------------
-    # RIGHT → DONUT + COUNTS (SINGLE CARD)
+    # RIGHT → DONUT + COUNTS
     # -------------------------
     with right:
         films_count = int((chart_df["category"] == "Films").sum()) if not chart_df.empty else 0
