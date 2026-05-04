@@ -13,6 +13,7 @@
   background: var(--bg);
   color: var(--text);
   font-family: "Segoe UI", sans-serif;
+  font-size: 18px;
 }
 
 .home-shell {
@@ -25,7 +26,7 @@
 
 .brand-name {
   color: var(--yellow);
-  font-size: 2rem;
+  font-size: 2.4rem;
   font-weight: 700;
   line-height: 1;
   margin: 0;
@@ -33,7 +34,7 @@
 
 .brand-subtitle {
   color: var(--muted);
-  font-size: 0.75rem;
+  font-size: 0.9rem;
   letter-spacing: 0.2em;
   margin: 0.2rem 0 0 0;
 }
@@ -50,12 +51,14 @@
 .hero-card h1 {
   color: var(--text);
   margin: 0;
+  font-size: 2.2rem;
 }
 
 .hero-card p,
 .chart-subtitle,
 .summary-card p {
   color: var(--muted);
+  font-size: 1.05rem;
 }
 
 .filter-title,
@@ -63,17 +66,19 @@
   color: var(--amber);
   letter-spacing: 0.15em;
   font-weight: 600;
-  font-size: 0.75rem;
+  font-size: 0.9rem;
   margin: 0.75rem 0 0.5rem;
 }
 
 .summary-card h3 {
   color: var(--text);
   margin-bottom: 0.2rem;
+  font-size: 1.4rem;
 }
 
 .summary-stat {
   display: flex;
+  font-size: 1.05rem;
   justify-content: space-between;
   align-items: center;
   border-top: 1px solid var(--border);
@@ -83,7 +88,7 @@
 
 .summary-stat strong {
   color: var(--yellow);
-  font-size: 1.35rem;
+  font-size: 1.6rem;
 }
 
 div[data-baseweb="select"] > div {
@@ -96,4 +101,11 @@ div[data-baseweb="select"] > div {
 label[data-testid="stWidgetLabel"] p {
   color: var(--muted);
   font-weight: 600;
+    font-size: 1rem;
+}
+
+.disclaimer {
+  color: #9E9689;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
 }

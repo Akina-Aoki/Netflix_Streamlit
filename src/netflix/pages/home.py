@@ -58,6 +58,7 @@ def home() -> None:
     )
 
     df = prepare_home_data()
+    st.markdown('<div class="disclaimer">Data from Netflix Tudum is available from July 2021 to March 2026. Filters outside this range will return no results.</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="filter-title">FILTER</div>', unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns(4)
@@ -71,15 +72,18 @@ def home() -> None:
     month_options = [m for m in list(calendar.month_name)[1:] if m in df["month_name"].astype(str).unique()]
     selected_month = c3.selectbox("Month", month_options, index=0)
 
-    category_options = ["Films", "TV"]
+    category_options = ["All", "Films", "TV"]
     selected_category = c4.selectbox("Category", category_options, index=0)
 
     filtered = df[
         (df["country_name"] == selected_country)
         & (df["year"] == selected_year)
         & (df["month_name"].astype(str) == selected_month)
-        & (df["category"] == selected_category)
     ].copy()
+
+    if selected_category != "All":
+        filtered = filtered[filtered["category"] == selected_category].copy()
+
 
     agg = (
         filtered.groupby(["show_title", "category"], as_index=False)["score"]
@@ -120,7 +124,7 @@ def home() -> None:
                 xaxis=dict(showgrid=False, title=None),
                 yaxis=dict(showgrid=False, title=None),
                 legend_title_text="",
-                legend=dict(orientation="h", y=1.08, x=0.75),
+                legend=dict(orientation="h", y=1.08, x=0.0, font=dict(size=14, color=PAGE_COLORS["text"]), bgcolor="rgba(0,0,0,0)"),
                 height=500,
             )
             st.plotly_chart(fig, use_container_width=True)
@@ -131,7 +135,7 @@ def home() -> None:
         st.markdown(
             f"""
             <div class="summary-card">
-                <h3>Movies vs Series</h3>
+                <h3>Films vs TV</h3>
                 <p>Of top 10 titles in the chart</p>
                 <div class="summary-stat"><span>Films</span><strong>{films_count}</strong></div>
                 <div class="summary-stat"><span>TV</span><strong>{tv_count}</strong></div>
