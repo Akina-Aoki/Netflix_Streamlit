@@ -1,20 +1,26 @@
-from pathlib import PosixPath
-import pandas as pd 
-import streamlit as st 
-from salaries.utils.constants import DATA_PATH
+import pandas as pd
+import streamlit as st
+from netflix.utils.constants import DATA_PATH
 
-def read_textfile(path: PosixPath) -> str:
-    with open(path) as file:
+
+def read_textfile(path):
+    with open(path, encoding="utf-8") as file:
         return file.read()
 
 
-def read_css(path: PosixPath) -> str:
+def read_css(path):
     css = read_textfile(path)
-    st.write(
-        f"<style>{css}</style>", unsafe_allow_html=True
-    )
+    st.write(f"<style>{css}</style>", unsafe_allow_html=True)
+
 
 @st.cache_data
-def get_salaries_df():
-    return pd.read_csv(DATA_PATH / "salaries.csv")
-cle
+def get_global_weekly_df():
+    df = pd.read_excel(DATA_PATH / "global_weekly.xlsx")
+    df["week"] = pd.to_datetime(df["week"])
+    return df
+
+
+@st.cache_data
+def get_global_alltime_df():
+    df = pd.read_excel(DATA_PATH / "global_alltime.xlsx")
+    return df

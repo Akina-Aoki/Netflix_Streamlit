@@ -1,10 +1,13 @@
-import streamlit as st 
-from salaries.utils.helpers import get_salaries_df
+import streamlit as st
+from netflix.utils.helpers import get_global_weekly_df
+
 
 def raw_data():
+    st.title("📄 Raw Data")
 
-    st.markdown("# Raw data")
-    st.dataframe(get_salaries_df())
+    df = get_global_weekly_df()
+    st.dataframe(df)
+
 
 if __name__ == "__main__":
     raw_data()

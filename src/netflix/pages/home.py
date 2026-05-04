@@ -1,12 +1,17 @@
 import streamlit as st
-from salaries.utils.helpers import read_textfile
-from salaries.utils.constants import MARKDOWN_PATH, IMAGE_PATH
+from netflix.utils.helpers import read_textfile
+from netflix.utils.constants import MARKDOWN_PATH
+
 
 def home():
+    st.title("🎬 Netflix Analytics")
 
-    st.markdown("# Data salaries insights")
-    st.image(IMAGE_PATH / "salaries_data_engineers.png")
-    st.markdown(read_textfile(MARKDOWN_PATH / "intro_salaries.md"))
+    st.markdown(
+        "This dashboard explores Netflix insights across countries."
+    )
+
+    st.markdown(read_textfile(MARKDOWN_PATH / "introduction.md"))
+
 
 if __name__ == "__main__":
     home()

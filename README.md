@@ -20,3 +20,4 @@ NETFLIX_STREAMLIT/
 
 ---
 
+uv run streamlit run src/netflix/app.py
