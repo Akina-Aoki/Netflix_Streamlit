@@ -6,6 +6,8 @@ import streamlit as st
 from netflix.utils.constants import STYLE_PATH
 from netflix.utils.helpers import get_global_weekly_df, read_css
 
+from netflix.components.visuals import make_success_scatter
+
 
 PAGE_COLORS = {
     "bg": "#0F0D0B",
@@ -232,6 +234,62 @@ def home() -> None:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
+    st.markdown("<br><br>", unsafe_allow_html=True)
+
+    st.markdown("<hr>", unsafe_allow_html=True)
+    
+    # =========================
+    #  SCATTER SECTION
+    # =========================
+
+    st.markdown(
+        '<div class="chart-title">What does a successful show look like?</div>',
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        '<div class="chart-subtitle">Shows are grouped based on hype and longevity. This reveals whether success comes from sustained engagement or short-term spikes.</div>',
+        unsafe_allow_html=True
+    )
+
+    # Separate filters (important: independent logic)
+    sc1, sc2, sc3 = st.columns(3)
+
+    scatter_country = sc1.selectbox(
+        "Country (Scatter)",
+        country_options,
+        key="scatter_country"
+    )
+
+    scatter_year = sc2.selectbox(
+        "Year (Scatter)",
+        year_options,
+        key="scatter_year"
+    )
+
+    scatter_month = sc3.selectbox(
+        "Month (Scatter)",
+        month_options,
+        key="scatter_month"
+    )
+
+    scatter_df = df[
+        (df["country_name"] == scatter_country)
+        & (df["year"] == scatter_year)
+        & (df["month_name"].astype(str) == scatter_month)
+    ].copy()
+
+    if scatter_df.empty:
+        st.warning("No data for selected filters.")
+    else:
+        fig = make_success_scatter(scatter_df)
+        st.plotly_chart(fig, use_container_width=True)
 
 if __name__ == "__main__":
     home()
+
+
+
+
+
+
