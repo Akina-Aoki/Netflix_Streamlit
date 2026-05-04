@@ -26,7 +26,6 @@ uv init --package netflix --python 3.13
 ```
 
 ---
-
 ### 2. Move package into `src` layout
 
 ```bash
@@ -35,3 +34,8 @@ mv netflix src/
 ```
 
 ---
+
+### 3. Install packages
+```
+uv add streamlit pandas duckdb
+```
