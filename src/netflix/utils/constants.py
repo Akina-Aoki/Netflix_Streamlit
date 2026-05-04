@@ -1,7 +1,7 @@
 from pathlib import Path
 
 ASSET_PATH = Path(__file__).parents[1] / "assets"   #goes two levels up, landing in the netflix/folder
-DATA_PATH = ASSET_PATH / "data"
+DATA_PATH = ASSET_PATH 
 
 # --- Took colours from my EDA ---
 GRAY_1 = "#BEBEBE"
