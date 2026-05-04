@@ -1,3 +1,4 @@
+import pandas as pd
 import plotly.express as px
 import streamlit as st
 
@@ -5,13 +6,20 @@ from netflix.components.filters import filters_ui
 from netflix.utils.constants import STYLE_PATH
 from netflix.utils.helpers import get_global_weekly_df, read_css
 
+
+# -------------------------
+# COLORS (UPDATED)
+# -------------------------
 SEGMENT_COLORS = {
-    "Evergreen": "#4C78A8",
-    "Blockbuster": "#F7B952",
-    "Hype": "#E45756",
+    "Hype": "#E8622A",
+    "Balanced": "#F7B952",
+    "High Retention": "#4C78A8",
 }
 
 
+# -------------------------
+# AGGREGATION (CORRECT GRAIN)
+# -------------------------
 @st.cache_data
 def _aggregate_success_profile(filtered_df):
     if filtered_df.empty:
@@ -20,21 +28,33 @@ def _aggregate_success_profile(filtered_df):
     profile_df = (
         filtered_df.groupby(["show_title", "category"], as_index=False)
         .agg(
-            longevity=("cumulative_weeks_in_top_10", "max"),
+            # FIX: weekly count inside month
+            longevity=("week", "count"),
             performance_score=("weekly_rank", lambda s: (11 - s).sum()),
         )
-        .sort_values("performance_score", ascending=False)
-        .head(3)
         .copy()
     )
 
+    # -------------------------
+    # SEGMENTATION
+    # -------------------------
     profile_df["segment"] = "Hype"
-    profile_df.loc[
-        (profile_df["longevity"] >= 40) & (profile_df["performance_score"] >= 20000),
-        "segment",
-    ] = "Blockbuster"
-    profile_df.loc[profile_df["longevity"] >= 80, "segment"] = "Evergreen"
+    profile_df.loc[profile_df["longevity"] == 4, "segment"] = "High Retention"
+    profile_df.loc[profile_df["longevity"] == 3, "segment"] = "Balanced"
 
+    # -------------------------
+    # PICK BEST PER SEGMENT
+    # -------------------------
+    profile_df = (
+        profile_df.sort_values("performance_score", ascending=False)
+        .groupby("segment", as_index=False)
+        .head(1)
+        .copy()
+    )
+
+    # -------------------------
+    # LABELS
+    # -------------------------
     profile_df["point_label"] = (
         profile_df["show_title"]
         + "<br>"
@@ -46,8 +66,12 @@ def _aggregate_success_profile(filtered_df):
     return profile_df
 
 
+# -------------------------
+# DATA BUILDER
+# -------------------------
 @st.cache_data
 def build_success_profile_data(df, country, year, month, category):
+
     strict_df = df[
         (df["country_name"] == country)
         & (df["year"] == year)
@@ -58,15 +82,21 @@ def build_success_profile_data(df, country, year, month, category):
     if not strict_df.empty:
         return _aggregate_success_profile(strict_df), "strict"
 
+    # fallback
     relaxed_df = df[
         (df["country_name"] == country)
         & (df["year"] == year)
         & (df["category"] == category)
     ].copy()
+
     return _aggregate_success_profile(relaxed_df), "relaxed"
 
 
+# -------------------------
+# FIGURE
+# -------------------------
 def build_success_profile_figure(profile_df):
+
     fig = px.scatter(
         profile_df,
         x="longevity",
@@ -79,37 +109,80 @@ def build_success_profile_figure(profile_df):
 
     fig.update_traces(
         mode="markers+text",
-        marker=dict(size=22, line=dict(width=1, color="#FFFFFF")),
-        textposition="bottom center",
-        textfont=dict(color="#FFFFFF", size=12),
+        marker=dict(size=26, line=dict(width=2, color="#FFFFFF")),
+        textposition="top center",
+        textfont=dict(color="#1A1612", size=15),
     )
 
     fig.update_layout(
-        paper_bgcolor="#0F0D0B",
-        plot_bgcolor="#0F0D0B",
-        font=dict(color="#FFFFFF"),
+        paper_bgcolor="#F5F0E8",
+        plot_bgcolor="#F5F0E8",
+        font=dict(color="#1A1612", size=16),
         legend_title_text="Segment",
         xaxis_title="Longevity (weeks in Top 10)",
-        yaxis_title="Performance Score",
+        yaxis_title="Popularity",
         margin=dict(l=20, r=20, t=20, b=20),
     )
 
-    fig.update_xaxes(showgrid=True, gridcolor="rgba(255,255,255,0.15)")
-    fig.update_yaxes(showgrid=True, gridcolor="rgba(255,255,255,0.15)")
+    # -------------------------
+    # AXIS FIX (NO CLIPPING)
+    # -------------------------
+    fig.update_xaxes(
+        showgrid=True,
+        gridcolor="#F7B952",
+        range=[0.5, profile_df["longevity"].max() + 0.5],
+        title_font=dict(size=18),
+        tickfont=dict(size=15),
+    )
+
+    fig.update_yaxes(
+        showgrid=True,
+        gridcolor="#F7B952",
+        range=[0, profile_df["performance_score"].max() * 1.2],
+        showticklabels=False,
+        title_font=dict(size=18),
+    )
+
     return fig
 
 
+# -------------------------
+# PAGE
+# -------------------------
 def success_profile():
     read_css(STYLE_PATH / "dashboard.css")
 
     st.title("What does a successful show look like?")
     st.markdown("Compare top shows by longevity and popularity.")
 
-
+    # Load data
     weekly_df = get_global_weekly_df()
+
+    # -------------------------
+    # FIX MONTH ORDER (PROPER)
+    # -------------------------
+    month_order = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ]
+
+    weekly_df["month_name"] = pd.Categorical(
+        weekly_df["month_name"],
+        categories=month_order,
+        ordered=True
+    )
+
+    # -------------------------
+    # FILTERS
+    # -------------------------
     country, year, month, category = filters_ui(weekly_df)
 
-    profile_df, mode = build_success_profile_data(weekly_df, country, year, month, category)
+    # -------------------------
+    # DATA
+    # -------------------------
+    profile_df, mode = build_success_profile_data(
+        weekly_df, country, year, month, category
+    )
 
     if profile_df.empty:
         st.warning("No data available for the selected filters.")
@@ -118,12 +191,19 @@ def success_profile():
     if mode == "relaxed":
         st.info(
             f"No rows for {month} in {country} ({year}, {category}). "
-            "Showing the same country/year/category across all months instead."
+            "Showing broader data instead."
         )
 
+    # -------------------------
+    # CHART
+    # -------------------------
     fig = build_success_profile_figure(profile_df)
-    st.plotly_chart(fig, use_container_width=True)
+
+    st.plotly_chart(fig, width="stretch")
 
 
+# -------------------------
+# RUN
+# -------------------------
 if __name__ == "__main__":
     success_profile()
