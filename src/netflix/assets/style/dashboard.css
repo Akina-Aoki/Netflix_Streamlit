@@ -1,4 +1,99 @@
-body {
-    background-color: #0e1117;
-    color: white;
+:root {
+  --bg: #0F0D0B;
+  --card: #1A1612;
+  --border: #2A2118;
+  --yellow: #F7B952;
+  --orange: #E8622A;
+  --amber: #FFB84D;
+  --text: #F5F0E8;
+  --muted: #9E9689;
+}
+
+.stApp {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI", sans-serif;
+}
+
+.home-shell {
+  padding-top: 0.5rem;
+}
+
+.brand-block {
+  margin-bottom: 1rem;
+}
+
+.brand-name {
+  color: var(--yellow);
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  margin: 0;
+}
+
+.brand-subtitle {
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  margin: 0.2rem 0 0 0;
+}
+
+.hero-card,
+.summary-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.hero-card h1 {
+  color: var(--text);
+  margin: 0;
+}
+
+.hero-card p,
+.chart-subtitle,
+.summary-card p {
+  color: var(--muted);
+}
+
+.filter-title,
+.chart-title {
+  color: var(--amber);
+  letter-spacing: 0.15em;
+  font-weight: 600;
+  font-size: 0.75rem;
+  margin: 0.75rem 0 0.5rem;
+}
+
+.summary-card h3 {
+  color: var(--text);
+  margin-bottom: 0.2rem;
+}
+
+.summary-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border);
+  padding: 0.7rem 0;
+  color: var(--text);
+}
+
+.summary-stat strong {
+  color: var(--yellow);
+  font-size: 1.35rem;
+}
+
+div[data-baseweb="select"] > div {
+  background: var(--card);
+  border-color: var(--border);
+  color: var(--text);
+  border-radius: 12px;
+}
+
+label[data-testid="stWidgetLabel"] p {
+  color: var(--muted);
+  font-weight: 600;
 }
