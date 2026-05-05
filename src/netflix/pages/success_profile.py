@@ -56,11 +56,11 @@ def get_global_weekly_df() -> pd.DataFrame:
 
 
 def _inject_success_profile_styles() -> None:
-    """Inject local page styles for the branded Streamly header and cards."""
+    """Inject local page styles for the branded Streamly header, cards, and filters."""
     st.markdown(
         f"""
         <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap');
 
         .sp-header {{
             margin-top: 0.2rem;
@@ -79,8 +79,8 @@ def _inject_success_profile_styles() -> None:
 
         .sp-subtitle {{
             font-family: "Inter", Arial, sans-serif;
-            font-size: 1.05rem;
-            font-weight: 500;
+            font-size: 1.08rem;
+            font-weight: 600;
             color: {BRAND_COLORS["text"]};
             margin-top: 0.55rem;
             margin-bottom: 1rem;
@@ -98,7 +98,7 @@ def _inject_success_profile_styles() -> None:
         .sp-card-title {{
             font-family: "Inter", Arial, sans-serif;
             font-size: 0.78rem;
-            font-weight: 700;
+            font-weight: 800;
             letter-spacing: 0.08em;
             text-transform: uppercase;
             margin-bottom: 0.55rem;
@@ -141,6 +141,79 @@ def _inject_success_profile_styles() -> None:
 
         .sp-hype-title {{
             color: {BRAND_COLORS["red"]};
+        }}
+
+        /* More breathing room between story cards and filters */
+        .sp-filter-section {{
+            margin-top: 2.1rem;
+            margin-bottom: 0.9rem;
+        }}
+
+        .sp-filter-label {{
+            font-family: "Inter", Arial, sans-serif;
+            font-size: 0.86rem;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: {BRAND_COLORS["orange"]};
+            margin-bottom: 0.45rem;
+        }}
+
+        /* Hide Streamlit's default selectbox labels because we render our own labels */
+        div[data-testid="stSelectbox"] label {{
+            display: none;
+        }}
+
+        /* Streamly-style select boxes */
+        div[data-baseweb="select"] > div {{
+            background: linear-gradient(180deg, #2A2118 0%, #1A1612 100%) !important;
+            border: 1px solid #3A2B1D !important;
+            border-radius: 999px !important;
+            min-height: 44px !important;
+            color: {BRAND_COLORS["text"]} !important;
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.04),
+                0 0 0 1px rgba(247, 185, 82, 0.06) !important;
+        }}
+
+        div[data-baseweb="select"] > div:hover {{
+            border-color: {BRAND_COLORS["amber"]} !important;
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.04),
+                0 0 0 1px rgba(247, 185, 82, 0.25) !important;
+        }}
+
+        div[data-baseweb="select"] span {{
+            color: {BRAND_COLORS["text"]} !important;
+            font-family: "Inter", Arial, sans-serif !important;
+            font-size: 0.95rem !important;
+            font-weight: 700 !important;
+        }}
+
+        div[data-baseweb="select"] svg {{
+            color: {BRAND_COLORS["amber"]} !important;
+            fill: {BRAND_COLORS["amber"]} !important;
+        }}
+
+        div[data-baseweb="popover"] {{
+            background: {BRAND_COLORS["card"]} !important;
+            color: {BRAND_COLORS["text"]} !important;
+        }}
+
+        ul[role="listbox"] {{
+            background: {BRAND_COLORS["card"]} !important;
+            border: 1px solid {BRAND_COLORS["surface"]} !important;
+        }}
+
+        li[role="option"] {{
+            background: {BRAND_COLORS["card"]} !important;
+            color: {BRAND_COLORS["text"]} !important;
+            font-family: "Inter", Arial, sans-serif !important;
+        }}
+
+        li[role="option"]:hover {{
+            background: {BRAND_COLORS["surface"]} !important;
+            color: {BRAND_COLORS["amber"]} !important;
         }}
         </style>
         """,
@@ -347,12 +420,13 @@ def build_success_profile_data(
 
 
 def build_success_profile_figure(profile_df: pd.DataFrame):
-    """Create the cream storytelling-style Success Profile scatter chart."""
+    """Create the cream storytelling-style Success Profile scatter chart with safer label spacing."""
     y_max = profile_df["performance_score"].max()
     x_max = profile_df["longevity"].max()
 
-    x_axis_max = x_max + 1
-    y_axis_max = y_max * 1.35 if y_max > 0 else 1
+    # Extra space so labels do not get clipped at the top or right side.
+    x_axis_max = x_max + 1.2
+    y_axis_max = y_max * 1.55 if y_max > 0 else 1
 
     fig = px.scatter(
         profile_df,
@@ -361,20 +435,18 @@ def build_success_profile_figure(profile_df: pd.DataFrame):
         color="segment",
         color_discrete_map=SEGMENT_COLORS,
         category_orders={"segment": ["Balanced", "High Retention", "Hype"]},
-        text="point_label",
         hover_name="show_title",
     )
 
+    # Markers only. Labels are added manually below as annotations.
     fig.update_traces(
-        mode="markers+text",
+        mode="markers",
         marker=dict(size=26, line=dict(width=2, color="#FFFFFF")),
-        textposition="top center",
-        textfont=dict(color=CHART_COLORS["text"], size=15),
         cliponaxis=False,
     )
 
     fig.update_layout(
-        height=650,
+        height=700,
         paper_bgcolor=CHART_COLORS["background"],
         plot_bgcolor=CHART_COLORS["background"],
         font=dict(color=CHART_COLORS["text"], size=16),
@@ -395,7 +467,7 @@ def build_success_profile_figure(profile_df: pd.DataFrame):
         ),
         xaxis_title="Longevity (weeks in Top 10)",
         yaxis_title="Popularity",
-        margin=dict(l=80, r=80, t=40, b=80),
+        margin=dict(l=80, r=110, t=60, b=80),
     )
 
     # Vertical grid lines ON
@@ -455,6 +527,104 @@ def build_success_profile_figure(profile_df: pd.DataFrame):
         ayref="y",
         **arrow_style,
     )
+
+    # Custom label offsets per segment.
+    label_offsets = {
+        "Balanced": {
+            "ax": -26,
+            "ay": -38,
+            "xanchor": "right",
+            "yanchor": "bottom",
+            "align": "right",
+        },
+        "High Retention": {
+            "ax": 42,
+            "ay": -12,
+            "xanchor": "left",
+            "yanchor": "middle",
+            "align": "left",
+        },
+        "Hype": {
+            "ax": 0,
+            "ay": -54,
+            "xanchor": "center",
+            "yanchor": "bottom",
+            "align": "center",
+        },
+    }
+
+    label_df = profile_df.copy()
+
+    # Count points that share the same x value.
+    label_df["same_x_count"] = label_df.groupby("longevity")["show_title"].transform(
+        "count"
+    )
+
+    # Rank labels within the same x value so we can stagger them.
+    label_df = label_df.sort_values(
+        ["longevity", "performance_score"],
+        ascending=[True, False],
+    ).copy()
+
+    label_df["same_x_rank"] = label_df.groupby("longevity").cumcount()
+
+    for _, row in label_df.iterrows():
+        segment = str(row["segment"])
+
+        offset = label_offsets.get(
+            segment,
+            {
+                "ax": 0,
+                "ay": -38,
+                "xanchor": "center",
+                "yanchor": "bottom",
+                "align": "center",
+            },
+        ).copy()
+
+        # If labels share the same longevity position, stagger them more.
+        if int(row["same_x_count"]) > 1:
+            rank = int(row["same_x_rank"])
+
+            offset["ay"] = offset["ay"] - (rank * 24)
+
+            if rank % 2 == 0:
+                offset["ax"] = offset["ax"] - 28
+                offset["xanchor"] = "right"
+                offset["align"] = "right"
+            else:
+                offset["ax"] = offset["ax"] + 28
+                offset["xanchor"] = "left"
+                offset["align"] = "left"
+
+        label = (
+            f"{row['show_title']}<br>"
+            f"{int(row['longevity'])}w | {int(row['performance_score'])}"
+        )
+
+        fig.add_annotation(
+            x=row["longevity"],
+            y=row["performance_score"],
+            xref="x",
+            yref="y",
+            text=label,
+            showarrow=True,
+            arrowhead=0,
+            arrowsize=1,
+            arrowwidth=1.1,
+            arrowcolor="rgba(60, 60, 60, 0.55)",
+            ax=offset["ax"],
+            ay=offset["ay"],
+            font=dict(
+                color=CHART_COLORS["text"],
+                size=13,
+            ),
+            align=offset["align"],
+            xanchor=offset["xanchor"],
+            yanchor=offset["yanchor"],
+            bgcolor="rgba(245, 240, 232, 0)",
+            borderpad=2,
+        )
 
     return fig
 
@@ -521,26 +691,54 @@ def _render_success_story_cards() -> None:
 
 
 def _render_success_filters(df: pd.DataFrame) -> tuple[str, int, str, str]:
-    """Render filters local to this page so shared filters stay unchanged."""
+    """Render branded filters local to this page so shared filters stay unchanged."""
     countries = sorted(df["country_name"].dropna().unique().tolist())
     years = sorted(df["year"].dropna().unique().tolist(), reverse=True)
     months_in_data = set(df["month_name"].dropna().astype(str).unique().tolist())
     months = [month for month in MONTH_ORDER if month in months_in_data]
     categories = sorted(df["category"].dropna().unique().tolist())
 
+    st.markdown('<div class="sp-filter-section">', unsafe_allow_html=True)
+
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
-        country = st.selectbox("Country", countries, index=0)
+        st.markdown('<div class="sp-filter-label">Country</div>', unsafe_allow_html=True)
+        country = st.selectbox(
+            "Country",
+            countries,
+            index=0,
+            label_visibility="collapsed",
+        )
 
     with col2:
-        year = st.selectbox("Year", years, index=0)
+        st.markdown('<div class="sp-filter-label">Year</div>', unsafe_allow_html=True)
+        year = st.selectbox(
+            "Year",
+            years,
+            index=0,
+            label_visibility="collapsed",
+        )
 
     with col3:
-        month = st.selectbox("Month", months, index=0)
+        st.markdown('<div class="sp-filter-label">Month</div>', unsafe_allow_html=True)
+        month = st.selectbox(
+            "Month",
+            months,
+            index=0,
+            label_visibility="collapsed",
+        )
 
     with col4:
-        category = st.selectbox("Category", categories, index=0)
+        st.markdown('<div class="sp-filter-label">Category</div>', unsafe_allow_html=True)
+        category = st.selectbox(
+            "Category",
+            categories,
+            index=0,
+            label_visibility="collapsed",
+        )
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
     return country, year, month, category
 
