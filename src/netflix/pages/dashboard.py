@@ -8,18 +8,18 @@ def dashboard_layout():
     with col2:
         russia_line_chart()
 
+# --- Change of plans: better with Maarcus' version ---
+    #st.markdown("# Search for a title")
+    #search = st.text_input("Type a film or serie title")
 
-    st.markdown("# Search for a title")
-    search = st.text_input("Type a film or serie title")
 
-
-    if search:
+    #if search:
         results = df["show_title"].str.contains(search, case=False, na=False)
 
-        if results.empty:
-            st.warning("No result found")
-        else: 
-            st.dataframe(results[["show_title", "country_name", "week", "weekly_rank", "cumulative_weeks_in_top_10"]].sort_values("week", ascending=False))
+    #    if results.empty:
+    #        st.warning("No result found")
+    #    else: 
+    #        st.dataframe(results[["show_title", "country_name", "week", "weekly_rank", "cumulative_weeks_in_top_10"]].sort_values("week", ascending=False))
 
 
 if __name__ == "__main__":
