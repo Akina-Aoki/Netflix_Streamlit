@@ -28,13 +28,13 @@ def read_css(path):
 @st.cache_data
 def get_weekly_df():
     """Läser in global_weekly Excel-data"""
-    return pd.read_excel(DATA_PATH / "2026-02-08_global_weekly.xlsx")
+    return pd.read_excel(DATA_PATH / "global_weekly.xlsx")
 
 
 @st.cache_data
 def get_alltime_df():
     """Läser in global_alltime Excel-data"""
-    return pd.read_excel(DATA_PATH / "2026-02-08_global_alltime.xlsx")
+    return pd.read_excel(DATA_PATH / "global_alltime.xlsx")
 
 
 @st.cache_data
