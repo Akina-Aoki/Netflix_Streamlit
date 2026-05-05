@@ -1,10 +1,12 @@
 import calendar
-from pathlib import Path
 
 import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from netflix.components.branding import render_page_header, render_streamly_banner
+from netflix.components.cards import render_story_card
+from netflix.components.filters import render_labeled_selectbox
 from netflix.utils.constants import STYLES_PATH
 from netflix.utils.helpers import get_weekly_df, read_css
 
@@ -15,19 +17,6 @@ SEGMENT_COLORS = {
     "High Retention": "#2A9D8F",
 }
 
-BRAND_COLORS = {
-    "bg": "#0F0D0B",
-    "card": "#1A1612",
-    "surface": "#2A2118",
-    "amber": "#F7B952",
-    "orange": "#E8622A",
-    "amber_dark": "#FFB84D",
-    "text": "#F5F0E8",
-    "muted": "#9E9689",
-    "green": "#2A9D8F",
-    "red": "#E63946",
-}
-
 CHART_COLORS = {
     "background": "#F5F0E8",
     "text": "#111111",
@@ -35,9 +24,6 @@ CHART_COLORS = {
     "axis": "#222222",
     "vertical_guide": "#E8C87E",
 }
-
-BASE_DIR = Path(__file__).resolve().parents[1]
-LOGO_PATH = BASE_DIR / "assets" / "image" / "Logga_Streamly.png"
 
 MONTH_ORDER = list(calendar.month_name)[1:]
 
@@ -53,185 +39,6 @@ REQUIRED_COLUMNS = {
 def get_global_weekly_df() -> pd.DataFrame:
     """Compatibility wrapper for the older Success Profile page naming."""
     return get_weekly_df()
-
-
-def _inject_success_profile_styles() -> None:
-    """Inject local page styles for the branded Streamly header, cards, and filters."""
-    st.markdown(
-        f"""
-        <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap');
-
-        .sp-header {{
-            margin-top: 0.2rem;
-            margin-bottom: 0.4rem;
-        }}
-
-        .sp-title {{
-            font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif;
-            font-size: 3.25rem;
-            line-height: 0.95;
-            font-weight: 700;
-            color: {BRAND_COLORS["amber"]};
-            letter-spacing: -0.02em;
-            margin: 0;
-        }}
-
-        .sp-subtitle {{
-            font-family: "Inter", Arial, sans-serif;
-            font-size: 1.08rem;
-            font-weight: 600;
-            color: {BRAND_COLORS["text"]};
-            margin-top: 0.55rem;
-            margin-bottom: 1rem;
-        }}
-
-        .sp-card {{
-            background: linear-gradient(180deg, {BRAND_COLORS["card"]} 0%, #17120E 100%);
-            border: 1px solid {BRAND_COLORS["surface"]};
-            border-radius: 14px;
-            padding: 0.95rem 1rem 1rem 1rem;
-            min-height: 140px;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
-        }}
-
-        .sp-card-title {{
-            font-family: "Inter", Arial, sans-serif;
-            font-size: 0.78rem;
-            font-weight: 800;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            margin-bottom: 0.55rem;
-        }}
-
-        .sp-card-body {{
-            font-family: "Inter", Arial, sans-serif;
-            font-size: 0.95rem;
-            line-height: 1.55;
-            color: {BRAND_COLORS["text"]};
-        }}
-
-        .sp-card-metric {{
-            border-top: 4px solid {BRAND_COLORS["amber"]};
-        }}
-
-        .sp-card-retention {{
-            border-top: 4px solid {BRAND_COLORS["green"]};
-        }}
-
-        .sp-card-balanced {{
-            border-top: 4px solid {BRAND_COLORS["amber_dark"]};
-        }}
-
-        .sp-card-hype {{
-            border-top: 4px solid {BRAND_COLORS["red"]};
-        }}
-
-        .sp-metric-title {{
-            color: {BRAND_COLORS["amber"]};
-        }}
-
-        .sp-retention-title {{
-            color: {BRAND_COLORS["green"]};
-        }}
-
-        .sp-balanced-title {{
-            color: {BRAND_COLORS["amber_dark"]};
-        }}
-
-        .sp-hype-title {{
-            color: {BRAND_COLORS["red"]};
-        }}
-
-        /* More breathing room between story cards and filters */
-        .sp-filter-section {{
-            margin-top: 2.1rem;
-            margin-bottom: 0.9rem;
-        }}
-
-        .sp-filter-label {{
-            font-family: "Inter", Arial, sans-serif;
-            font-size: 0.86rem;
-            font-weight: 800;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: {BRAND_COLORS["orange"]};
-            margin-bottom: 0.45rem;
-        }}
-
-        /* Hide Streamlit's default selectbox labels because we render our own labels */
-        div[data-testid="stSelectbox"] label {{
-            display: none;
-        }}
-
-        /* Streamly-style select boxes */
-        div[data-baseweb="select"] > div {{
-            background: linear-gradient(180deg, #2A2118 0%, #1A1612 100%) !important;
-            border: 1px solid #3A2B1D !important;
-            border-radius: 999px !important;
-            min-height: 44px !important;
-            color: {BRAND_COLORS["text"]} !important;
-            box-shadow:
-                inset 0 1px 0 rgba(255, 255, 255, 0.04),
-                0 0 0 1px rgba(247, 185, 82, 0.06) !important;
-        }}
-
-        div[data-baseweb="select"] > div:hover {{
-            border-color: {BRAND_COLORS["amber"]} !important;
-            box-shadow:
-                inset 0 1px 0 rgba(255, 255, 255, 0.04),
-                0 0 0 1px rgba(247, 185, 82, 0.25) !important;
-        }}
-
-        div[data-baseweb="select"] span {{
-            color: {BRAND_COLORS["text"]} !important;
-            font-family: "Inter", Arial, sans-serif !important;
-            font-size: 0.95rem !important;
-            font-weight: 700 !important;
-        }}
-
-        div[data-baseweb="select"] svg {{
-            color: {BRAND_COLORS["amber"]} !important;
-            fill: {BRAND_COLORS["amber"]} !important;
-        }}
-
-        div[data-baseweb="popover"] {{
-            background: {BRAND_COLORS["card"]} !important;
-            color: {BRAND_COLORS["text"]} !important;
-        }}
-
-        ul[role="listbox"] {{
-            background: {BRAND_COLORS["card"]} !important;
-            border: 1px solid {BRAND_COLORS["surface"]} !important;
-        }}
-
-        li[role="option"] {{
-            background: {BRAND_COLORS["card"]} !important;
-            color: {BRAND_COLORS["text"]} !important;
-            font-family: "Inter", Arial, sans-serif !important;
-        }}
-
-        li[role="option"]:hover {{
-            background: {BRAND_COLORS["surface"]} !important;
-            color: {BRAND_COLORS["amber"]} !important;
-        }}
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
-def _render_success_profile_header() -> None:
-    """Render the branded page header."""
-    st.markdown(
-        """
-        <div class="sp-header">
-            <div class="sp-title">What does a successful show look like?</div>
-            <div class="sp-subtitle">Compare top shows by longevity and popularity.</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
 
 
 @st.cache_data
@@ -634,60 +441,44 @@ def _render_success_story_cards() -> None:
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
-        st.markdown(
-            f"""
-            <div class="sp-card sp-card-metric">
-                <div class="sp-card-title sp-metric-title">How to read this chart</div>
-                <div class="sp-card-body">
-                    <strong>Weeks</strong> = time in Top 10.<br>
-                    <strong>Score</strong> = how popular the show was.
-                </div>
-            </div>
+        render_story_card(
+            title="How to read this chart",
+            body="""
+                <strong>Weeks</strong> = time in Top 10.<br>
+                <strong>Score</strong> = how popular the show was.
             """,
-            unsafe_allow_html=True,
         )
 
     with col2:
-        st.markdown(
-            f"""
-            <div class="sp-card sp-card-retention">
-                <div class="sp-card-title sp-retention-title">High Retention</div>
-                <div class="sp-card-body">
-                    People keep watching again and again.<br><br>
-                    These titles stay in the Top 10 longer and show stronger staying power.
-                </div>
-            </div>
+        render_story_card(
+            title="High Retention",
+            body="""
+                People keep watching again and again.<br><br>
+                These titles stay in the Top 10 longer and show stronger staying power.
             """,
-            unsafe_allow_html=True,
+            variant="green",
         )
 
     with col3:
-        st.markdown(
-            f"""
-            <div class="sp-card sp-card-balanced">
-                <div class="sp-card-title sp-balanced-title">Balanced Success</div>
-                <div class="sp-card-body">
-                    Strong popularity and strong retention.<br><br>
-                    These titles combine momentum with consistency.
-                </div>
-            </div>
+        render_story_card(
+            title="Balanced Success",
+            body="""
+                Strong popularity and strong retention.<br><br>
+                These titles combine momentum with consistency.
             """,
-            unsafe_allow_html=True,
+            variant="amber",
         )
 
     with col4:
-        st.markdown(
-            f"""
-            <div class="sp-card sp-card-hype">
-                <div class="sp-card-title sp-hype-title">Hype</div>
-                <div class="sp-card-body">
-                    Strongest popularity spike.<br><br>
-                    These titles rise fast and stand out through high popularity score.
-                </div>
-            </div>
+        render_story_card(
+            title="Hype",
+            body="""
+                Strongest popularity spike.<br><br>
+                These titles rise fast and stand out through high popularity score.
             """,
-            unsafe_allow_html=True,
+            variant="red",
         )
+        
 
 
 def _render_success_filters(df: pd.DataFrame) -> tuple[str, int, str, str]:
@@ -698,91 +489,30 @@ def _render_success_filters(df: pd.DataFrame) -> tuple[str, int, str, str]:
     months = [month for month in MONTH_ORDER if month in months_in_data]
     categories = sorted(df["category"].dropna().unique().tolist())
 
-    st.markdown('<div class="sp-filter-section">', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="streamly-filter-section streamly-filter-section-sp">',
+        unsafe_allow_html=True,
+    )
 
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
-        st.markdown('<div class="sp-filter-label">Country</div>', unsafe_allow_html=True)
-        country = st.selectbox(
-            "Country",
-            countries,
-            index=0,
-            label_visibility="collapsed",
-        )
+        country = render_labeled_selectbox("Country", countries, index=0)
 
     with col2:
-        st.markdown('<div class="sp-filter-label">Year</div>', unsafe_allow_html=True)
-        year = st.selectbox(
-            "Year",
-            years,
-            index=0,
-            label_visibility="collapsed",
-        )
+        year = render_labeled_selectbox("Year", years, index=0)
 
     with col3:
-        st.markdown('<div class="sp-filter-label">Month</div>', unsafe_allow_html=True)
-        month = st.selectbox(
-            "Month",
-            months,
-            index=0,
-            label_visibility="collapsed",
-        )
+        month = render_labeled_selectbox("Month", months, index=0)
 
     with col4:
-        st.markdown('<div class="sp-filter-label">Category</div>', unsafe_allow_html=True)
-        category = st.selectbox(
-            "Category",
-            categories,
-            index=0,
-            label_visibility="collapsed",
-        )
+        category = render_labeled_selectbox("Category", categories, index=0)
 
     st.markdown("</div>", unsafe_allow_html=True)
 
     return country, year, month, category
 
 
-def _render_streamly_banner() -> None:
-    """Render the Streamly logo banner above the page title."""
-    if LOGO_PATH.exists():
-        st.image(str(LOGO_PATH), width=220)
-    else:
-        st.markdown(
-            f"""
-            <div style="
-                color: {BRAND_COLORS['amber']};
-                font-family: Georgia, 'Times New Roman', serif;
-                font-size: 3rem;
-                font-weight: 700;
-                line-height: 1;
-                margin-bottom: 0.2rem;
-            ">
-                Streamly
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    st.markdown(
-        f"""
-        <div style="
-            color: {BRAND_COLORS['muted']};
-            font-size: 0.95rem;
-            margin-top: -0.25rem;
-            margin-bottom: 1.1rem;
-        ">
-            Global Netflix viewing statistics
-        </div>
-
-        <div style="
-            height: 1px;
-            background: {BRAND_COLORS['surface']};
-            margin: 0 0 1.8rem 0;
-        "></div>
-        """,
-        unsafe_allow_html=True,
-    )
 
 
 def success_profile() -> None:
@@ -791,9 +521,12 @@ def success_profile() -> None:
     if css_path.exists():
         read_css(css_path)
 
-    _inject_success_profile_styles()
-    _render_streamly_banner()
-    _render_success_profile_header()
+    render_streamly_banner(width=220)
+    render_page_header(
+        title="What does a successful show look like?",
+        subtitle="Compare top shows by longevity and popularity.",
+    )
+
     _render_success_story_cards()
 
     weekly_df = prepare_success_profile_data()
