@@ -6,6 +6,10 @@ __pycache__/
 # C extensions
 *.so
 
+# Files
+src/netflix/assets/data/*
+src/netflix/assets/image/*
+src/netflix/pages/insights.py
 # Distribution / packaging
 .Python
 build/
