@@ -1,10 +1,12 @@
 import calendar
+
 import pandas as pd
 import plotly.express as px
 import streamlit as st
 
 from netflix.utils.constants import IMAGE_PATH, STYLES_PATH
 from netflix.utils.helpers import get_country_df, get_global_df, get_weekly_df, read_css
+
 
 PAGE_COLORS = {
     "bg": "#0F0D0B",
@@ -34,7 +36,10 @@ def load_home_kpis() -> dict:
     df_country = get_country_df().copy()
 
     df_combined = pd.concat(
-        [df_global[["category", "show_title"]], df_country[["category", "show_title"]]],
+        [
+            df_global[["category", "show_title"]],
+            df_country[["category", "show_title"]],
+        ],
         ignore_index=True,
     )
 
@@ -44,6 +49,7 @@ def load_home_kpis() -> dict:
     total_films = df_combined[df_combined["category"].isin(film_categories)][
         "show_title"
     ].nunique()
+
     total_series = df_combined[df_combined["category"].isin(series_categories)][
         "show_title"
     ].nunique()
@@ -65,14 +71,25 @@ def prepare_home_chart_data() -> pd.DataFrame:
     df["week"] = pd.to_datetime(df["week"], errors="coerce")
     df["weekly_rank"] = pd.to_numeric(df["weekly_rank"], errors="coerce")
 
-    df = df.dropna(subset=["week", "weekly_rank", "show_title", "category", "country_name"])
+    df = df.dropna(
+        subset=[
+            "week",
+            "weekly_rank",
+            "show_title",
+            "category",
+            "country_name",
+        ]
+    ).copy()
 
     df["year"] = df["week"].dt.year
     df["month_num"] = df["week"].dt.month
 
     month_labels = list(calendar.month_name)[1:]
+
     df["month_name"] = pd.Categorical(
-        df["week"].dt.month_name(), categories=month_labels, ordered=True
+        df["week"].dt.month_name(),
+        categories=month_labels,
+        ordered=True,
     )
 
     df["score"] = 11 - df["weekly_rank"]
@@ -87,6 +104,7 @@ def prepare_home_chart_data() -> pd.DataFrame:
         "Series": "TV",
         "TV": "TV",
     }
+
     df["category"] = df["category"].map(category_map).fillna(df["category"])
 
     return df
@@ -99,13 +117,6 @@ def inject_home_styles() -> None:
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap');
 
-        .home-kpi-grid {{
-            display: grid;
-            grid-template-columns: repeat(5, minmax(0, 1fr));
-            gap: 0.9rem;
-            margin: 1.4rem 0 1.4rem 0;
-        }}
-
         .home-kpi-card {{
             background:
                 radial-gradient(circle at top right, rgba(247, 185, 82, 0.15), transparent 42%),
@@ -113,7 +124,8 @@ def inject_home_styles() -> None:
             border: 1px solid {PAGE_COLORS["border"]};
             border-radius: 16px;
             padding: 1rem 1.05rem;
-            min-height: 125px;
+            min-height: 135px;
+            margin: 1.4rem 0;
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
         }}
 
@@ -266,13 +278,21 @@ def inject_home_styles() -> None:
             color: {PAGE_COLORS["amber"]} !important;
             fill: {PAGE_COLORS["amber"]} !important;
         }}
-
-        @media (max-width: 1100px) {{
-            .home-kpi-grid {{
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }}
-        }}
         </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_kpi_card(label: str, value: str, note: str) -> None:
+    """Render one KPI card safely."""
+    st.markdown(
+        f"""
+        <div class="home-kpi-card">
+            <div class="home-kpi-label">{label}</div>
+            <div class="home-kpi-value">{value}</div>
+            <div class="home-kpi-note">{note}</div>
+        </div>
         """,
         unsafe_allow_html=True,
     )
@@ -292,42 +312,42 @@ def render_kpi_header() -> None:
     st.caption("Global Netflix viewing statistics")
     st.divider()
 
-    st.markdown(
-        f"""
-        <div class="home-kpi-grid">
-            <div class="home-kpi-card">
-                <div class="home-kpi-label">Total Films</div>
-                <div class="home-kpi-value">{total_films}</div>
-                <div class="home-kpi-note">Unique film titles across Netflix viewing datasets.</div>
-            </div>
+    col1, col2, col3, col4, col5 = st.columns(5, gap="small")
 
-            <div class="home-kpi-card">
-                <div class="home-kpi-label">Total Series</div>
-                <div class="home-kpi-value">{total_series}</div>
-                <div class="home-kpi-note">Unique TV titles tracked across weekly and country data.</div>
-            </div>
+    with col1:
+        render_kpi_card(
+            label="Total Films",
+            value=total_films,
+            note="Unique film titles across Netflix viewing datasets.",
+        )
 
-            <div class="home-kpi-card">
-                <div class="home-kpi-label">Countries</div>
-                <div class="home-kpi-value">{total_countries}</div>
-                <div class="home-kpi-note">Markets represented in the country-level Top 10 data.</div>
-            </div>
+    with col2:
+        render_kpi_card(
+            label="Total Series",
+            value=total_series,
+            note="Unique TV titles tracked across weekly and country data.",
+        )
 
-            <div class="home-kpi-card">
-                <div class="home-kpi-label">Weeks Tracked</div>
-                <div class="home-kpi-value">{weeks_tracked}</div>
-                <div class="home-kpi-note">Weekly snapshots available for trend exploration.</div>
-            </div>
+    with col3:
+        render_kpi_card(
+            label="Countries",
+            value=total_countries,
+            note="Markets represented in the country-level Top 10 data.",
+        )
 
-            <div class="home-kpi-card">
-                <div class="home-kpi-label">Hours Viewed</div>
-                <div class="home-kpi-value">{total_hours_b}</div>
-                <div class="home-kpi-note">Total global weekly viewing hours captured in the data.</div>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    with col4:
+        render_kpi_card(
+            label="Weeks Tracked",
+            value=weeks_tracked,
+            note="Weekly snapshots available for trend exploration.",
+        )
+
+    with col5:
+        render_kpi_card(
+            label="Hours Viewed",
+            value=total_hours_b,
+            note="Total global weekly viewing hours captured in the data.",
+        )
 
     st.markdown(
         f"""
@@ -347,23 +367,28 @@ def render_kpi_header() -> None:
         unsafe_allow_html=True,
     )
 
+
 def render_analytics_section() -> None:
     """Render old Netflix analytics dashboard section below Home overview."""
     weekly_df = prepare_home_chart_data()
 
-    st.markdown('<div class="home-section-title">Netflix Analytics</div>', unsafe_allow_html=True)
     st.markdown(
-            """
-    <div class="home-section-subtitle">
-        Explore the top 10 films and series across countries, months, and categories.
-    </div>
-    """,
-    unsafe_allow_html=True,
+        '<div class="home-section-title">Netflix Analytics</div>',
+        unsafe_allow_html=True,
     )
 
     st.markdown(
-    '<div class="home-disclaimer">Data is based on Netflix weekly Top 10 rankings.</div>',
-    unsafe_allow_html=True,
+        """
+        <div class="home-section-subtitle">
+            Explore the top 10 films and series across countries, months, and categories.
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        '<div class="home-disclaimer">Data is based on Netflix weekly Top 10 rankings.</div>',
+        unsafe_allow_html=True,
     )
 
     st.markdown('<div class="home-filter-section">', unsafe_allow_html=True)
@@ -375,7 +400,10 @@ def render_analytics_section() -> None:
     latest_year_idx = len(years) - 1 if years else 0
 
     with c1:
-        st.markdown('<div class="home-filter-label">Country</div>', unsafe_allow_html=True)
+        st.markdown(
+            '<div class="home-filter-label">Country</div>',
+            unsafe_allow_html=True,
+        )
         selected_country = st.selectbox(
             "Country",
             countries,
@@ -383,7 +411,10 @@ def render_analytics_section() -> None:
         )
 
     with c2:
-        st.markdown('<div class="home-filter-label">Year</div>', unsafe_allow_html=True)
+        st.markdown(
+            '<div class="home-filter-label">Year</div>',
+            unsafe_allow_html=True,
+        )
         selected_year = st.selectbox(
             "Year",
             years,
@@ -401,7 +432,10 @@ def render_analytics_section() -> None:
     available_months = [m for m in month_order if m in set(months_in_data.astype(str))]
 
     with c3:
-        st.markdown('<div class="home-filter-label">Month</div>', unsafe_allow_html=True)
+        st.markdown(
+            '<div class="home-filter-label">Month</div>',
+            unsafe_allow_html=True,
+        )
         selected_month = st.selectbox(
             "Month",
             available_months,
@@ -409,7 +443,10 @@ def render_analytics_section() -> None:
         )
 
     with c4:
-        st.markdown('<div class="home-filter-label">Category</div>', unsafe_allow_html=True)
+        st.markdown(
+            '<div class="home-filter-label">Category</div>',
+            unsafe_allow_html=True,
+        )
         selected_category = st.selectbox(
             "Category",
             ["All", "Films", "TV"],
@@ -453,8 +490,12 @@ def render_analytics_section() -> None:
             color="category",
             orientation="h",
             text="performance_score",
-            color_discrete_map={"Films": PAGE_COLORS["yellow"], "TV": PAGE_COLORS["orange"]},
+            color_discrete_map={
+                "Films": PAGE_COLORS["yellow"],
+                "TV": PAGE_COLORS["orange"],
+            },
         )
+
         bar_fig.update_layout(
             height=500,
             paper_bgcolor=PAGE_COLORS["card"],
@@ -462,8 +503,15 @@ def render_analytics_section() -> None:
             font_color=PAGE_COLORS["text"],
             xaxis_title="",
             yaxis_title="",
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="left",
+                x=0,
+            ),
         )
+
         bar_fig.update_traces(textposition="outside")
         st.plotly_chart(bar_fig, use_container_width=True)
 
@@ -476,9 +524,14 @@ def render_analytics_section() -> None:
             values=[films_count, tv_count],
             hole=0.6,
             color=["Films", "TV"],
-            color_discrete_map={"Films": PAGE_COLORS["yellow"], "TV": PAGE_COLORS["orange"]},
+            color_discrete_map={
+                "Films": PAGE_COLORS["yellow"],
+                "TV": PAGE_COLORS["orange"],
+            },
         )
+
         donut_fig.update_traces(textinfo="percent+label")
+
         donut_fig.update_layout(
             showlegend=False,
             height=260,
@@ -486,6 +539,7 @@ def render_analytics_section() -> None:
             font_color=PAGE_COLORS["text"],
             margin=dict(l=10, r=10, t=10, b=10),
         )
+
         st.plotly_chart(donut_fig, use_container_width=True)
         st.caption("Of top 10 titles in the chart")
         st.write(f"**Films:** {films_count}")
