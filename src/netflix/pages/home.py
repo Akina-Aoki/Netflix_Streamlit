@@ -1,5 +1,4 @@
 import calendar
-
 import pandas as pd
 import plotly.express as px
 import streamlit as st
@@ -52,7 +51,6 @@ def load_home_kpis() -> dict:
     total_films = df_combined[df_combined["category"].isin(film_categories)][
         "show_title"
     ].nunique()
-
     total_series = df_combined[df_combined["category"].isin(series_categories)][
         "show_title"
     ].nunique()
@@ -107,7 +105,6 @@ def prepare_home_chart_data() -> pd.DataFrame:
         "Series": "TV",
         "TV": "TV",
     }
-
     df["category"] = df["category"].map(category_map).fillna(df["category"])
 
     return df
@@ -315,7 +312,6 @@ def render_analytics_section() -> None:
             font_color=PAGE_COLORS["text"],
             margin=dict(l=10, r=10, t=10, b=10),
         )
-
         st.plotly_chart(donut_fig, use_container_width=True)
         st.caption("Of top 10 titles in the chart")
         st.write(f"**Films:** {films_count}")
