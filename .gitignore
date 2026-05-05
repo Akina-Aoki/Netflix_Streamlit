@@ -216,3 +216,18 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+
+# Files - keep folder structure but ignore contents
+src/netflix/assets/data/*
+!src/netflix/assets/data/.gitkeep
+
+src/netflix/assets/image/*
+!src/netflix/assets/image/.gitkeep
+
+src/netflix/assets/markdown/*
+!src/netflix/assets/markdown/.gitkeep
+
+# macOS
+.DS_Store
+**/.DS_Store
