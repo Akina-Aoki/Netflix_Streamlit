@@ -9,7 +9,7 @@ st.set_page_config(
 
 pages = [
     st.Page("pages/home.py", title="Home", icon="🏠"),
-    st.Page("pages/success_profile.py", title="Success Profile"),
+    st.Page("pages/success_profile.py", title="⭐ Success Profile"),
     st.Page("pages/dashboard.py", title="Dashboard", icon="📊"),
     st.Page("pages/raw_data.py", title="Raw Data", icon="🧾"),
 ]
