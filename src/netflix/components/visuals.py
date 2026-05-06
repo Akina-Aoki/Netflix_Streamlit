@@ -91,7 +91,16 @@ def russia_line_chart():
     world_continue = world_yearly[world_yearly.index <= 2025]
 
     fig, ax = plt.subplots(figsize=(8, 5))
+
+    fig.patch.set_facecolor("#1A1612")
+    ax.set_facecolor("#1A1612")
+
     ax.spines[["top", "right"]].set_visible(False)
+    ax.spines[["left", "bottom"]].set_color("#9E9689")
+    ax.tick_params(colors="#9E9689")
+    ax.yaxis.label.set_color("#9E9689")
+    ax.xaxis.label.set_color("#9E9689")  
+
 
     ax.set_xlabel("YEAR")
     ax.set_ylabel("# of rows")
@@ -109,7 +118,11 @@ def russia_line_chart():
         "Netflix data for Russia ends abruptly in March 2022"
         "\nfollowing the invasion of Ukraine",
         pad=22, loc="left",
+        fontfamily="Segoe UI",
+        fontweight="normal",
+        color="#F5F0E8",
     )
+
     ax.annotate(
         "Start of Russian aggression\nin Ukraine",
         xy=(1, russia_2022.iloc[1]),

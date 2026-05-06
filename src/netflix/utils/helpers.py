@@ -53,3 +53,8 @@ def get_country_df():
 def get_metadata_df():
     """Läser in metadata med posters, trailers o beskrivningar"""
     return pd.read_csv(DATA_PATH / "DimMetaData_Final.csv")
+
+def show_banner():
+    from netflix.utils.constants import IMAGE_PATH
+    st.image(str(IMAGE_PATH / "Logga_Streamly.png"), width=200)
+    st.caption("Global Netflix viewing statistics")
