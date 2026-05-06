@@ -61,14 +61,19 @@ def show_banner():
 
 
 
-# --- For Russias KPIs using unique "shows" (film and series) ---
-@st.cache_data
-def get_russia_kpi():
+# --- For Russias KPIs using unique "shows" (film and series) --
+# Adding filters with 3 options
+def get_russia_kpi(category="All"):
 
 # Loading the data and filtering only Russia
     df = get_country_df()
     df["week"] = pd.to_datetime(df["week"])
     russia = df[df["country_name"] == "Russia"]
+
+    # Filter by category
+    if category != "All":
+        russia = russia[russia["category"] == category]
+
 
 # Counting unique shows at beginning and ends of 2021 and 2022 (march)
 # Filtering now month (July) and extracting unique value
@@ -99,11 +104,9 @@ def get_russia_kpi():
     "both_years_pct": both_years_prct,
 }
 
-
-
-
-
-
+# --- separation band between sections ---
+def separation_band(title):
+    st.markdown(f"## {title}")
 
 
 

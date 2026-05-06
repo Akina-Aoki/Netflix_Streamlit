@@ -1,9 +1,12 @@
 import streamlit as st
 from netflix.components.visuals import russia_line_chart
-from netflix.utils.helpers import show_banner
-from netflix.utils.helpers import get_russia_kpi, get_country_df
+from netflix.utils.constants import STYLES_PATH
+import matplotlib.pyplot as plt
+from netflix.utils.helpers import show_banner, get_russia_kpi, get_country_df, read_css, separation_band
 
 
+# --- Loaded css was needed here ---
+read_css(STYLES_PATH / "dashboard.css")
 
 show_banner()
 
@@ -31,9 +34,18 @@ col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
     russia_line_chart()
 
-
-# --- Trying to separate this part from the onlione chart ---
+# --- Insights band ---
 st.divider()
+separation_band("Unique Shows — Russia in Numbers")
+
+
+# --- Filters ---
+category = st.radio(
+    "Filter by category",
+    ["All", "Movie", "Serie"],
+    horizontal=True
+)
+
 
 # Values in the center of the cards
 st.markdown("""
@@ -60,7 +72,9 @@ st.markdown("""
 
 
 # Getting all the calculated numbers
-kpi = get_russia_kpi()  
+#get_russia_kpi(category)
+kpi = get_russia_kpi(category)
+ 
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
@@ -77,3 +91,83 @@ with col4:
     st.metric(label="Last data from Feb 2022", value=kpi["end_2022"],
         delta=f"{kpi['both_years']:+.0f} ({kpi['both_years_pct']:+.1f}%) vs Jul 2021")
 
+
+# --- Word of caution about the numbers and interpretation ---
+st.markdown("""
+    <p class='disclaimer'>
+        Note: the low numbers (11 to 14 unique series) mean percentages should be interpreted with caution. 
+        Series were the growth driver in Russia — up +27.3% from July 2021 to February 2022. Films declined with -5%.
+    </p>
+""", unsafe_allow_html=True)
+
+st.divider()
+
+# --- Top 10 series in Russia ---
+separation_band("Top 10 Series in Russia")
+
+col_left, col_mid, col_right = st.columns([1, 2, 1])
+with col_mid:
+    df = get_country_df()
+    russia = df[df["country_name"] == "Russia"]
+    series = russia[russia["category"] == "Serie"]
+
+    top10 = (
+        series.groupby("show_title")["cumulative_weeks_in_top_10"]
+        .max()
+        .sort_values(ascending=True)  # ascending so longest bar is on top
+        .tail(10)
+        .reset_index()
+    )
+    top10.columns = ["show_title", "weeks_in_top_10"]
+    top10["show_title"] = top10["show_title"].str.title()
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+    fig.patch.set_facecolor("#1A1612")
+    ax.set_facecolor("#1A1612")
+
+    ax.spines[["top", "right"]].set_visible(False)
+    ax.spines[["left", "bottom"]].set_color("#9E9689")
+    ax.tick_params(colors="#9E9689")
+    ax.xaxis.label.set_color("#9E9689")
+    ax.yaxis.label.set_color("#9E9689")
+
+    bars = ax.barh(
+        top10["show_title"],
+        top10["weeks_in_top_10"],
+        color="#FFB84D",  
+        edgecolor="none",
+    )
+
+# --- Highlight the top bar in yellow ---
+    bars[-1].set_color("#F7B952") 
+
+# --- Add value labels at end of each bar ---
+    for bar in bars:
+        ax.text(
+            bar.get_width() + 0.3,
+            bar.get_y() + bar.get_height() / 2,
+            f"{int(bar.get_width())} weeks",
+            va="center",
+            color="#9E9689",
+            fontsize=9,
+        )
+
+    ax.set_xlabel("Weeks in Top 10", color="#9E9689")
+    ax.set_title(
+        "Top 10 Series in Russia before February 2022",
+        pad=22, loc="left",
+        fontfamily="Segoe UI",
+        fontweight="normal",
+        color="#F5F0E8",
+    )
+
+    fig.tight_layout()
+    st.pyplot(fig)
+    plt.close(fig)
+
+# --- closing comment ---
+st.markdown("""
+    <p class='disclaimer'>
+        Money Heist dominated Russia's top 10 for 35 weeks — more than double any other series.
+    </p>
+""", unsafe_allow_html=True)
