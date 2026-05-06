@@ -1,0 +1,488 @@
+"""Country Insights Streamlit page.
+
+This page compares a selected country's favorite Netflix titles against the
+same titles' performance in other countries.
+"""
+
+import calendar
+
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+import streamlit as st
+
+from netflix.components.branding import render_page_header, render_streamly_banner
+from netflix.components.cards import render_kpi_card
+from netflix.components.filters import render_labeled_selectbox
+from netflix.components.visuals import make_country_choropleth
+from netflix.utils.constants import STYLES_PATH
+from netflix.utils.helpers import get_weekly_df, read_css
+
+
+PAGE_COLORS = {
+    "bg": "#0F0D0B",
+    "card": "#1A1612",
+    "border": "#2A2118",
+    "yellow": "#F7B952",
+    "orange": "#E8622A",
+    "amber": "#FFB84D",
+    "text": "#F5F0E8",
+    "muted": "#9E9689",
+}
+
+CATEGORY_COLORS = {
+    "Films": PAGE_COLORS["yellow"],
+    "TV": PAGE_COLORS["orange"],
+}
+
+MONTH_ORDER = list(calendar.month_name)[1:]
+
+
+@st.cache_data
+def prepare_country_insights_data() -> pd.DataFrame:
+    """Load and prepare weekly country-level Top 10 data for this page."""
+    df = get_weekly_df().copy()
+
+    df["week"] = pd.to_datetime(df["week"], errors="coerce")
+    df["weekly_rank"] = pd.to_numeric(df["weekly_rank"], errors="coerce")
+
+    required_columns = [
+        "week",
+        "weekly_rank",
+        "show_title",
+        "category",
+        "country_name",
+    ]
+    df = df.dropna(subset=required_columns).copy()
+
+    df["year"] = df["week"].dt.year
+    df["month_num"] = df["week"].dt.month
+    df["month_name"] = pd.Categorical(
+        df["week"].dt.month_name(),
+        categories=MONTH_ORDER,
+        ordered=True,
+    )
+
+    category_map = {
+        "Movie": "Films",
+        "Movies": "Films",
+        "Film": "Films",
+        "Films": "Films",
+        "Serie": "TV",
+        "Series": "TV",
+        "TV": "TV",
+    }
+    df["category"] = df["category"].map(category_map).fillna(df["category"])
+
+    df["score"] = 11 - df["weekly_rank"]
+    df = df[df["score"].notna() & (df["score"] > 0)].copy()
+
+    return df
+
+
+def build_country_top10_chart_df(
+    df: pd.DataFrame,
+    selected_country: str,
+    selected_year: int,
+    selected_month: str,
+    selected_category: str,
+) -> pd.DataFrame:
+    """Return the selected country's top 10 title performance dataframe."""
+    filtered = df[
+        (df["country_name"] == selected_country)
+        & (df["year"] == selected_year)
+        & (df["month_name"].astype(str) == selected_month)
+    ].copy()
+
+    agg = (
+        filtered.groupby(["show_title", "category"], as_index=False)["score"]
+        .sum()
+        .rename(columns={"score": "performance_score"})
+    )
+
+    if selected_category != "All":
+        agg = agg[agg["category"] == selected_category].copy()
+
+    return (
+        agg.sort_values("performance_score", ascending=False)
+        .head(10)
+        .sort_values("performance_score", ascending=True)
+    )
+
+
+def build_films_tv_counts(chart_df: pd.DataFrame) -> pd.DataFrame:
+    """Count Films and TV titles from the top 10 dataframe for the donut chart."""
+    return pd.DataFrame(
+        {
+            "category": ["Films", "TV"],
+            "title_count": [
+                int((chart_df["category"] == "Films").sum()),
+                int((chart_df["category"] == "TV").sum()),
+            ],
+        }
+    )
+
+
+def build_period_df(
+    df: pd.DataFrame,
+    selected_year: int,
+    selected_month: str,
+    selected_category: str,
+) -> pd.DataFrame:
+    """Filter by time and category, intentionally leaving all countries present."""
+    period_df = df[
+        (df["year"] == selected_year)
+        & (df["month_name"].astype(str) == selected_month)
+    ].copy()
+
+    if selected_category != "All":
+        period_df = period_df[period_df["category"] == selected_category].copy()
+
+    return period_df
+
+
+def build_heatmap_df(
+    period_df: pd.DataFrame,
+    selected_country: str,
+    top_n_titles: int = 10,
+    max_countries: int = 20,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Build a Country × Title pivot using the selected country's top titles.
+
+    The selected country is only used to choose the title columns. The pivot
+    values are then calculated from all countries in the same period/category.
+    """
+    selected_country_titles = period_df[
+        period_df["country_name"] == selected_country
+    ].copy()
+
+    title_df = (
+        selected_country_titles.groupby(["show_title", "category"], as_index=False)[
+            "score"
+        ]
+        .sum()
+        .rename(columns={"score": "performance_score"})
+        .sort_values("performance_score", ascending=False)
+        .head(top_n_titles)
+    )
+
+    top_titles = title_df["show_title"].tolist()
+    if not top_titles:
+        return pd.DataFrame(), title_df
+
+    title_scores_by_country = (
+        period_df[period_df["show_title"].isin(top_titles)]
+        .groupby(["country_name", "show_title"], as_index=False)["score"]
+        .sum()
+        .rename(columns={"score": "performance_score"})
+    )
+
+    pivot_df = title_scores_by_country.pivot_table(
+        index="country_name",
+        columns="show_title",
+        values="performance_score",
+        aggfunc="sum",
+        fill_value=0,
+    )
+
+    pivot_df = pivot_df.reindex(columns=top_titles, fill_value=0)
+    pivot_df["__total__"] = pivot_df[top_titles].sum(axis=1)
+
+    countries_to_keep = (
+        pivot_df.sort_values("__total__", ascending=False).head(max_countries).index.tolist()
+    )
+    if selected_country in pivot_df.index and selected_country not in countries_to_keep:
+        countries_to_keep.append(selected_country)
+
+    pivot_df = pivot_df.loc[countries_to_keep].copy()
+    pivot_df = pivot_df.sort_values("__total__", ascending=False)
+
+    if selected_country in pivot_df.index:
+        row_order = [selected_country] + [
+            country for country in pivot_df.index if country != selected_country
+        ]
+        pivot_df = pivot_df.loc[row_order]
+
+    pivot_df = pivot_df.drop(columns="__total__")
+    return pivot_df, title_df
+
+
+def build_top10_bar_figure(chart_df: pd.DataFrame) -> go.Figure:
+    """Build the selected country's Top 10 horizontal bar chart."""
+    fig = px.bar(
+        chart_df,
+        x="performance_score",
+        y="show_title",
+        color="category",
+        orientation="h",
+        text="performance_score",
+        color_discrete_map=CATEGORY_COLORS,
+        hover_data={
+            "show_title": True,
+            "category": True,
+            "performance_score": True,
+        },
+    )
+    fig.update_traces(textposition="outside", cliponaxis=False)
+    fig.update_layout(
+        height=430,
+        paper_bgcolor=PAGE_COLORS["card"],
+        plot_bgcolor=PAGE_COLORS["card"],
+        font=dict(color=PAGE_COLORS["text"], family="Segoe UI, sans-serif"),
+        xaxis_title="Performance Score",
+        yaxis_title="",
+        margin=dict(l=10, r=30, t=20, b=35),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
+    )
+    fig.update_xaxes(gridcolor="rgba(158, 150, 137, 0.18)")
+    fig.update_yaxes(tickfont=dict(size=12))
+    return fig
+
+
+def build_donut_figure(counts_df: pd.DataFrame) -> go.Figure:
+    """Build a Films vs TV donut chart for the titles in the Top 10 chart."""
+    fig = px.pie(
+        counts_df,
+        names="category",
+        values="title_count",
+        hole=0.62,
+        color="category",
+        color_discrete_map=CATEGORY_COLORS,
+    )
+    fig.update_traces(textinfo="percent+label", textfont_color=PAGE_COLORS["text"])
+    fig.update_layout(
+        showlegend=False,
+        height=260,
+        paper_bgcolor=PAGE_COLORS["card"],
+        plot_bgcolor=PAGE_COLORS["card"],
+        font=dict(color=PAGE_COLORS["text"], family="Segoe UI, sans-serif"),
+        margin=dict(l=10, r=10, t=5, b=5),
+    )
+    return fig
+
+
+def build_heatmap_figure(heatmap_df: pd.DataFrame, selected_country: str) -> go.Figure:
+    """Render a dark Streamly-styled heatmap figure."""
+    y_labels = [
+        f"★ {country}" if country == selected_country else country
+        for country in heatmap_df.index.tolist()
+    ]
+
+    fig = go.Figure(
+        data=go.Heatmap(
+            z=heatmap_df.values,
+            x=heatmap_df.columns.tolist(),
+            y=y_labels,
+            colorscale=[
+                [0.0, "#17120E"],
+                [0.45, PAGE_COLORS["amber"]],
+                [1.0, PAGE_COLORS["orange"]],
+            ],
+            colorbar=dict(title="Score", tickfont=dict(color=PAGE_COLORS["text"])),
+            hovertemplate=(
+                "Country: %{y}<br>Title: %{x}<br>Performance Score: %{z}<extra></extra>"
+            ),
+        )
+    )
+    fig.update_layout(
+        height=max(520, 30 * len(heatmap_df.index) + 180),
+        paper_bgcolor=PAGE_COLORS["card"],
+        plot_bgcolor=PAGE_COLORS["card"],
+        font=dict(color=PAGE_COLORS["text"], family="Segoe UI, sans-serif"),
+        margin=dict(l=20, r=20, t=20, b=130),
+        xaxis_title="Titles",
+        yaxis_title="Countries",
+    )
+    fig.update_xaxes(tickangle=-35, tickfont=dict(size=11), side="bottom")
+    fig.update_yaxes(tickfont=dict(size=12), autorange="reversed")
+    return fig
+
+
+def render_card_header(title: str, subtitle: str | None = None) -> None:
+    """Render a reusable card title block above Streamlit chart containers."""
+    subtitle_html = (
+        f'<div class="country-card-subtitle">{subtitle}</div>' if subtitle else ""
+    )
+    st.markdown(
+        f"""
+        <div class="country-card-heading">
+            <div class="country-card-title">{title}</div>
+            {subtitle_html}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_filters(weekly_df: pd.DataFrame) -> tuple[str, int, str, str]:
+    """Render the Country Insights filter row."""
+    st.markdown('<div class="streamly-filter-section">', unsafe_allow_html=True)
+    c1, c2, c3, c4 = st.columns(4)
+
+    countries = sorted(weekly_df["country_name"].dropna().unique().tolist())
+    years = sorted(weekly_df["year"].dropna().unique().tolist())
+    latest_year_idx = len(years) - 1 if years else 0
+
+    with c1:
+        selected_country = render_labeled_selectbox(
+            "Country", countries, key="country_insights_country"
+        )
+
+    with c2:
+        selected_year = render_labeled_selectbox(
+            "Year", years, index=latest_year_idx, key="country_insights_year"
+        )
+
+    months_in_data = weekly_df.loc[
+        (weekly_df["country_name"] == selected_country)
+        & (weekly_df["year"] == selected_year),
+        "month_name",
+    ].dropna()
+    available_months = [m for m in MONTH_ORDER if m in set(months_in_data.astype(str))]
+
+    with c3:
+        selected_month = render_labeled_selectbox(
+            "Month", available_months, key="country_insights_month"
+        )
+
+    with c4:
+        selected_category = render_labeled_selectbox(
+            "Category", ["All", "Films", "TV"], key="country_insights_category"
+        )
+
+    st.markdown("</div>", unsafe_allow_html=True)
+    return selected_country, selected_year, selected_month, selected_category
+
+
+def country_insights() -> None:
+    """Render the Country Insights page."""
+    if (STYLES_PATH / "dashboard.css").exists():
+        read_css(STYLES_PATH / "dashboard.css")
+
+    render_streamly_banner(width=200)
+    render_page_header(
+        title="Country Insights",
+        subtitle="Explore what each country prefers and compare viewing patterns across markets.",
+    )
+
+    weekly_df = prepare_country_insights_data()
+    if weekly_df.empty:
+        st.warning("No weekly country data is available for Country Insights.")
+        return
+
+    selected_country, selected_year, selected_month, selected_category = render_filters(
+        weekly_df
+    )
+
+    if not selected_month:
+        st.warning("No month is available for the selected country and year.")
+        return
+
+    top10_df = build_country_top10_chart_df(
+        weekly_df,
+        selected_country,
+        selected_year,
+        selected_month,
+        selected_category,
+    )
+
+    if top10_df.empty:
+        st.warning("No titles found for the selected filters.")
+        return
+
+    map_col, chart_col = st.columns([1.05, 1.45], gap="large")
+
+    with map_col:
+        with st.container(border=True):
+            render_card_header(
+                "Selected Market",
+                "Highlighted country based on the active filters",
+            )
+            map_fig = make_country_choropleth(weekly_df, selected_country)
+            if map_fig is None:
+                st.info("Map data is unavailable for the selected dataset.")
+            else:
+                st.plotly_chart(map_fig, use_container_width=True)
+
+    with chart_col:
+        with st.container(border=True):
+            render_card_header(
+                "Top 10 Titles",
+                f"{selected_country} · {selected_month} {selected_year}",
+            )
+            st.plotly_chart(build_top10_bar_figure(top10_df), use_container_width=True)
+
+        with st.container(border=True):
+            render_card_header("Films vs TV", "Share of titles in the Top 10 chart")
+            counts_df = build_films_tv_counts(top10_df)
+            donut_col, stat_col = st.columns([1.2, 1])
+            with donut_col:
+                st.plotly_chart(build_donut_figure(counts_df), use_container_width=True)
+            with stat_col:
+                films_count = int(
+                    counts_df.loc[
+                        counts_df["category"] == "Films", "title_count"
+                    ].iloc[0]
+                )
+                tv_count = int(
+                    counts_df.loc[
+                        counts_df["category"] == "TV", "title_count"
+                    ].iloc[0]
+                )
+                st.markdown(
+                    f"""
+                    <div class="country-donut-stat">
+                        <span>Films</span><strong>{films_count}</strong>
+                    </div>
+                    <div class="country-donut-stat">
+                        <span>TV</span><strong>{tv_count}</strong>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+    period_df = build_period_df(
+        weekly_df, selected_year, selected_month, selected_category
+    )
+    heatmap_df, reference_titles_df = build_heatmap_df(period_df, selected_country)
+
+    st.markdown('<div class="country-heatmap-section">', unsafe_allow_html=True)
+    with st.container(border=True):
+        render_card_header(
+            "Country × Title Heatmap",
+            "Compare how the selected country's top titles perform across other countries.",
+        )
+
+        if heatmap_df.empty:
+            st.info("No heatmap data is available for the selected filters.")
+        else:
+            kpi1, kpi2, kpi3 = st.columns(3)
+            with kpi1:
+                render_kpi_card("Selected country", selected_country, "Reference market")
+            with kpi2:
+                render_kpi_card(
+                    "Top titles compared",
+                    str(len(reference_titles_df)),
+                    "Chosen from the selected country",
+                )
+            with kpi3:
+                render_kpi_card(
+                    "Countries compared",
+                    str(len(heatmap_df.index)),
+                    "Highest total score markets are shown",
+                )
+
+            st.plotly_chart(
+                build_heatmap_figure(heatmap_df, selected_country),
+                use_container_width=True,
+            )
+            st.caption(
+                "The heatmap uses the selected country's top titles as the comparison set. "
+                "Those favorite titles are then compared across other countries."
+            )
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+
+if __name__ == "__main__":
+    country_insights()
