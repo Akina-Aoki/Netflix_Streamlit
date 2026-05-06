@@ -654,16 +654,22 @@ li[role="option"]:hover {
 
 /* Country Insights page --------------------------------------------------- */
 .country-card-heading {
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
 }
 
 .country-card-title {
   color: var(--streamly-primary);
   font-family: "Inter", Arial, sans-serif;
-  font-size: 0.82rem;
+  font-size: 1.25rem;
   font-weight: 800;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  margin-bottom: 0.35rem;
   text-transform: uppercase;
+}
+
+.country-selector-title {
+  margin-bottom: 0.65rem;
 }
 
 .country-card-subtitle {

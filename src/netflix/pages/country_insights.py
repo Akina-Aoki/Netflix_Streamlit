@@ -215,7 +215,6 @@ def build_top10_bar_figure(chart_df: pd.DataFrame) -> go.Figure:
         y="show_title",
         color="category",
         orientation="h",
-        text="performance_score",
         color_discrete_map=CATEGORY_COLORS,
         hover_data={
             "show_title": True,
@@ -223,18 +222,18 @@ def build_top10_bar_figure(chart_df: pd.DataFrame) -> go.Figure:
             "performance_score": True,
         },
     )
-    fig.update_traces(textposition="outside", cliponaxis=False)
+    fig.update_traces(textposition="none", cliponaxis=False)
     fig.update_layout(
         height=430,
         paper_bgcolor=PAGE_COLORS["card"],
         plot_bgcolor=PAGE_COLORS["card"],
         font=dict(color=PAGE_COLORS["text"], family="Segoe UI, sans-serif"),
-        xaxis_title="Performance Score",
+        xaxis_title="None",
         yaxis_title="",
         margin=dict(l=10, r=30, t=20, b=35),
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
     )
-    fig.update_xaxes(gridcolor="rgba(158, 150, 137, 0.18)")
+    fig.update_xaxes(title_text=None, gridcolor="rgba(158, 150, 137, 0.18)")
     fig.update_yaxes(tickfont=dict(size=12))
     return fig
 
@@ -334,15 +333,25 @@ def build_title_trend_figure(trend_df: pd.DataFrame, selected_title: str) -> go.
         plot_bgcolor=PAGE_COLORS["card"],
         font=dict(color=PAGE_COLORS["text"], family="Segoe UI, sans-serif"),
         xaxis_title="Week",
-        yaxis_title="Performance Score",
+        yaxis_title="None",
         margin=dict(l=10, r=25, t=20, b=35),
         showlegend=False,
     )
-    fig.update_xaxes(gridcolor="rgba(158, 150, 137, 0.18)")
-    fig.update_yaxes(gridcolor="rgba(158, 150, 137, 0.18)", rangemode="tozero")
+    fig.update_xaxes(
+        showgrid=True,
+        gridcolor="rgba(247, 185, 82, 0.18)",
+        gridwidth=1,
+        tickmode="array",
+        tickvals=trend_df["week"],
+    )
+    fig.update_yaxes(
+        title_text=None,
+        showticklabels=False,
+        showgrid=False,
+        zeroline=False,
+        rangemode="tozero",
+    )
     return fig
-
-
 
 
 def build_heatmap_figure(heatmap_df: pd.DataFrame, selected_country: str) -> go.Figure:
@@ -396,6 +405,20 @@ def render_card_header(title: str, subtitle: str | None = None) -> None:
         """,
         unsafe_allow_html=True,
     )
+
+def render_title_selectbox(label: str, options: list, key: str) -> str:
+    """Render the trend selector with Country Insights card-title styling."""
+    st.markdown(
+        f'<div class="country-card-title country-selector-title">{label}</div>',
+        unsafe_allow_html=True,
+    )
+    return st.selectbox(
+        label,
+        options,
+        key=key,
+        label_visibility="collapsed",
+    )
+
 
 def render_section_heading(title: str, subtitle: str) -> None:
     """Render a larger section title for Country Insights feature sections."""
@@ -554,7 +577,7 @@ def country_insights() -> None:
         .tolist()
     )
     with st.container(border=True):
-        selected_title = render_labeled_selectbox(
+        selected_title = render_title_selectbox(
             "Choose a title from the Top 10",
             title_options,
             key="country_insights_trend_title",
