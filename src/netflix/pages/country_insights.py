@@ -12,6 +12,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from netflix.components.branding import render_page_header, render_streamly_banner
+from netflix.components.home_summary import render_home_summary
 from netflix.components.filters import render_labeled_selectbox
 from netflix.components.visuals import make_country_choropleth
 from netflix.utils.constants import STYLES_PATH
@@ -479,8 +480,9 @@ def country_insights() -> None:
         read_css(STYLES_PATH / "dashboard.css")
 
     render_streamly_banner(width=200)
+    render_home_summary(show_banner=False)
     render_page_header(
-        title="Country Insights",
+        title="Country Insights Home",
         subtitle="Explore what each country prefers and compare viewing patterns across markets.",
     )
 

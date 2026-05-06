@@ -22,10 +22,9 @@ read_css(STYLES_PATH / "main.css")
 #    st.image(str(IMAGE_PATH / "Logga_Streamly.png"), use_container_width=True)
 
 pages = [
-    st.Page("pages/home.py", title="🏠Home"),
+    st.Page("pages/country_insights.py", title="🏠Country Insights Home"),
     st.Page("pages/Insights.py", title="⭐Best Movie and Serie"),
     st.Page("pages/success_profile.py", title="⭐ Success Profile"),
-    st.Page("pages/country_insights.py", title="🌍 Country Insights"),
     st.Page("pages/dashboard.py", title="📊Dashboard"),
     st.Page("pages/raw_data.py", title="🧾Raw Data"),
     
