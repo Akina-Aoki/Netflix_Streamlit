@@ -1,7 +1,7 @@
 """Country Insights Streamlit page.
 
-This page compares a selected country's favorite Netflix titles against the
-same titles' performance in other countries.
+This page highlights a selected market's Top 10 snapshot and lets users
+inspect weekly title performance trends within that country.
 """
 
 import calendar
@@ -12,7 +12,6 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from netflix.components.branding import render_page_header, render_streamly_banner
-from netflix.components.cards import render_kpi_card
 from netflix.components.filters import render_labeled_selectbox
 from netflix.components.visuals import make_country_choropleth
 from netflix.utils.constants import STYLES_PATH
@@ -131,8 +130,7 @@ def build_period_df(
 ) -> pd.DataFrame:
     """Filter by time and category, intentionally leaving all countries present."""
     period_df = df[
-        (df["year"] == selected_year)
-        & (df["month_name"].astype(str) == selected_month)
+        (df["year"] == selected_year) & (df["month_name"].astype(str) == selected_month)
     ].copy()
 
     if selected_category != "All":
@@ -189,7 +187,9 @@ def build_heatmap_df(
     pivot_df["__total__"] = pivot_df[top_titles].sum(axis=1)
 
     countries_to_keep = (
-        pivot_df.sort_values("__total__", ascending=False).head(max_countries).index.tolist()
+        pivot_df.sort_values("__total__", ascending=False)
+        .head(max_countries)
+        .index.tolist()
     )
     if selected_country in pivot_df.index and selected_country not in countries_to_keep:
         countries_to_keep.append(selected_country)
@@ -252,13 +252,97 @@ def build_donut_figure(counts_df: pd.DataFrame) -> go.Figure:
     fig.update_traces(textinfo="percent+label", textfont_color=PAGE_COLORS["text"])
     fig.update_layout(
         showlegend=False,
-        height=260,
+        height=360,
         paper_bgcolor=PAGE_COLORS["card"],
         plot_bgcolor=PAGE_COLORS["card"],
         font=dict(color=PAGE_COLORS["text"], family="Segoe UI, sans-serif"),
         margin=dict(l=10, r=10, t=5, b=5),
     )
     return fig
+
+
+def build_title_trend_df(
+    df: pd.DataFrame,
+    selected_country: str,
+    selected_year: int,
+    selected_category: str,
+    selected_title: str,
+) -> pd.DataFrame:
+    """Return weekly performance for one title across the selected year.
+
+    The selected month is intentionally not applied here. It only chooses the
+    Top 10 snapshot that feeds the title dropdown.
+    """
+    trend_df = df[
+        (df["country_name"] == selected_country)
+        & (df["year"] == selected_year)
+        & (df["show_title"] == selected_title)
+    ].copy()
+
+    if selected_category != "All":
+        trend_df = trend_df[trend_df["category"] == selected_category].copy()
+
+    if trend_df.empty:
+        return pd.DataFrame()
+
+    agg = {"score": "sum", "weekly_rank": "min"}
+    if "cumulative_weeks_in_top_10" in trend_df.columns:
+        agg["cumulative_weeks_in_top_10"] = "max"
+
+    return (
+        trend_df.groupby(["week", "show_title"], as_index=False)
+        .agg(agg)
+        .rename(columns={"score": "performance_score"})
+        .sort_values("week")
+    )
+
+
+def build_title_trend_figure(trend_df: pd.DataFrame, selected_title: str) -> go.Figure:
+    """Build a Streamly-styled weekly performance line chart."""
+    hover_fields = ["show_title", "weekly_rank"]
+    hover_template = (
+        "Week: %{x|%b %d, %Y}<br>"
+        "Title: %{customdata[0]}<br>"
+        "Performance Score: %{y}<br>"
+        "Weekly Rank: %{customdata[1]}"
+    )
+
+    if "cumulative_weeks_in_top_10" in trend_df.columns:
+        hover_fields.append("cumulative_weeks_in_top_10")
+        hover_template += "<br>Weeks in Top 10: %{customdata[2]}"
+
+    fig = px.line(
+        trend_df,
+        x="week",
+        y="performance_score",
+        markers=True,
+        custom_data=hover_fields,
+    )
+    fig.update_traces(
+        name=selected_title,
+        line=dict(color=PAGE_COLORS["amber"], width=3),
+        marker=dict(
+            color=PAGE_COLORS["yellow"],
+            size=8,
+            line=dict(color=PAGE_COLORS["orange"], width=1),
+        ),
+        hovertemplate=hover_template + "<extra></extra>",
+    )
+    fig.update_layout(
+        height=430,
+        paper_bgcolor=PAGE_COLORS["card"],
+        plot_bgcolor=PAGE_COLORS["card"],
+        font=dict(color=PAGE_COLORS["text"], family="Segoe UI, sans-serif"),
+        xaxis_title="Week",
+        yaxis_title="Performance Score",
+        margin=dict(l=10, r=25, t=20, b=35),
+        showlegend=False,
+    )
+    fig.update_xaxes(gridcolor="rgba(158, 150, 137, 0.18)")
+    fig.update_yaxes(gridcolor="rgba(158, 150, 137, 0.18)", rangemode="tozero")
+    return fig
+
+
 
 
 def build_heatmap_figure(heatmap_df: pd.DataFrame, selected_country: str) -> go.Figure:
@@ -308,6 +392,18 @@ def render_card_header(title: str, subtitle: str | None = None) -> None:
         <div class="country-card-heading">
             <div class="country-card-title">{title}</div>
             {subtitle_html}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+def render_section_heading(title: str, subtitle: str) -> None:
+    """Render a larger section title for Country Insights feature sections."""
+    st.markdown(
+        f"""
+        <div class="country-section-heading">
+            <div class="country-section-title">{title}</div>
+            <div class="country-section-subtitle">{subtitle}</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -390,7 +486,7 @@ def country_insights() -> None:
         st.warning("No titles found for the selected filters.")
         return
 
-    map_col, chart_col = st.columns([1.05, 1.45], gap="large")
+    map_col, donut_col = st.columns([1.15, 1], gap="large")
 
     with map_col:
         with st.container(border=True):
@@ -404,30 +500,21 @@ def country_insights() -> None:
             else:
                 st.plotly_chart(map_fig, use_container_width=True)
 
-    with chart_col:
-        with st.container(border=True):
-            render_card_header(
-                "Top 10 Titles",
-                f"{selected_country} · {selected_month} {selected_year}",
-            )
-            st.plotly_chart(build_top10_bar_figure(top10_df), use_container_width=True)
-
+    with donut_col:
         with st.container(border=True):
             render_card_header("Films vs TV", "Share of titles in the Top 10 chart")
             counts_df = build_films_tv_counts(top10_df)
-            donut_col, stat_col = st.columns([1.2, 1])
-            with donut_col:
+            chart_col, stat_col = st.columns([1.2, 1])
+            with chart_col:
                 st.plotly_chart(build_donut_figure(counts_df), use_container_width=True)
             with stat_col:
                 films_count = int(
-                    counts_df.loc[
-                        counts_df["category"] == "Films", "title_count"
-                    ].iloc[0]
+                    counts_df.loc[counts_df["category"] == "Films", "title_count"].iloc[
+                        0
+                    ]
                 )
                 tv_count = int(
-                    counts_df.loc[
-                        counts_df["category"] == "TV", "title_count"
-                    ].iloc[0]
+                    counts_df.loc[counts_df["category"] == "TV", "title_count"].iloc[0]
                 )
                 st.markdown(
                     f"""
@@ -441,48 +528,52 @@ def country_insights() -> None:
                     unsafe_allow_html=True,
                 )
 
-    period_df = build_period_df(
-        weekly_df, selected_year, selected_month, selected_category
-    )
-    heatmap_df, reference_titles_df = build_heatmap_df(period_df, selected_country)
-
-    st.markdown('<div class="country-heatmap-section">', unsafe_allow_html=True)
     with st.container(border=True):
         render_card_header(
-            "Country × Title Heatmap",
-            "Compare how the selected country's top titles perform across other countries.",
+            "Top 10 Titles",
+            f"{selected_country} · {selected_month} {selected_year}",
+        )
+        st.plotly_chart(build_top10_bar_figure(top10_df), use_container_width=True)
+
+    render_section_heading(
+        "Title Performance Trend",
+        "See how a selected title performed over time in the selected country.",
+    )
+    st.markdown(
+        """
+        <div class="country-trend-note">
+            Use the Top 10 chart as the country snapshot, then choose one title to
+            inspect its weekly performance trend across the selected year.
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    title_options = (
+        top10_df.sort_values("performance_score", ascending=False)["show_title"]
+        .drop_duplicates()
+        .tolist()
+    )
+    with st.container(border=True):
+        selected_title = render_labeled_selectbox(
+            "Choose a title from the Top 10",
+            title_options,
+            key="country_insights_trend_title",
+        )
+        trend_df = build_title_trend_df(
+            weekly_df,
+            selected_country,
+            selected_year,
+            selected_category,
+            selected_title,
         )
 
-        if heatmap_df.empty:
-            st.info("No heatmap data is available for the selected filters.")
+        if trend_df.empty:
+            st.info("No weekly trend data is available for the selected title.")
         else:
-            kpi1, kpi2, kpi3 = st.columns(3)
-            with kpi1:
-                render_kpi_card("Selected country", selected_country, "Reference market")
-            with kpi2:
-                render_kpi_card(
-                    "Top titles compared",
-                    str(len(reference_titles_df)),
-                    "Chosen from the selected country",
-                )
-            with kpi3:
-                render_kpi_card(
-                    "Countries compared",
-                    str(len(heatmap_df.index)),
-                    "Highest total score markets are shown",
-                )
-
             st.plotly_chart(
-                build_heatmap_figure(heatmap_df, selected_country),
+                build_title_trend_figure(trend_df, selected_title),
                 use_container_width=True,
             )
-            st.caption(
-                "The heatmap uses the selected country's top titles as the comparison set. "
-                "Those favorite titles are then compared across other countries."
-            )
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-
+            
 if __name__ == "__main__":
     country_insights()

@@ -650,3 +650,91 @@ li[role="option"]:hover {
 .sp-hype-title {
   color: var(--streamly-red);
 }
+
+
+/* Country Insights page --------------------------------------------------- */
+.country-card-heading {
+  margin-bottom: 0.75rem;
+}
+
+.country-card-title {
+  color: var(--streamly-primary);
+  font-family: "Inter", Arial, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.country-card-subtitle {
+  color: var(--streamly-muted);
+  font-family: "Inter", Arial, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+.country-donut-stat {
+  background: linear-gradient(180deg, var(--streamly-card) 0%, #17120E 100%);
+  border: 1px solid var(--streamly-border);
+  border-radius: 14px;
+  margin-bottom: 0.75rem;
+  padding: 0.85rem 1rem;
+}
+
+.country-donut-stat span {
+  color: var(--streamly-muted);
+  display: block;
+  font-family: "Inter", Arial, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.country-donut-stat strong {
+  color: var(--streamly-primary);
+  display: block;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-top: 0.4rem;
+}
+
+.country-section-heading {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.country-section-title {
+  color: var(--streamly-primary);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 2.6rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 0.35rem;
+}
+
+.country-section-subtitle {
+  color: var(--streamly-text);
+  font-family: "Inter", Arial, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.country-trend-note {
+  background:
+    linear-gradient(135deg, rgba(247, 185, 82, 0.08), rgba(232, 98, 42, 0.04)),
+    var(--streamly-card);
+  border: 1px solid var(--streamly-border);
+  border-left: 4px solid var(--streamly-primary);
+  border-radius: 16px;
+  color: var(--streamly-muted);
+  font-family: "Inter", Arial, sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+  padding: 1rem 1.15rem;
+}
