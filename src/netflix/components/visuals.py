@@ -132,7 +132,7 @@ def russia_line_chart():
     )
 
     ax.text(4.1, world_continue.iloc[-1], "Rest of world (avg)", fontsize=9, va="center", color="#F5F0E8")
-    ax.text(1.1, russia_2022.iloc[-1], "Russia", fontsize=9, va="center", color="#F5F0E8"s)
+    ax.text(1.1, russia_2022.iloc[-1], "Russia", fontsize=9, va="center", color="#F5F0E8")
 
     fig.tight_layout()
     st.pyplot(fig)
