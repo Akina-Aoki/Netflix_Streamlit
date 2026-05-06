@@ -1,0 +1,8 @@
+/* fast höjd på poster-bilder, bara för insight-sidan */
+
+[data-testid="stImage"] img{
+    height: 350px !important;
+    width: 233px !important;
+    object-fit: cover !important;
+}
+
