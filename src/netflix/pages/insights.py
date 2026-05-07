@@ -1,13 +1,18 @@
 import streamlit as st
 from netflix.utils.helpers import get_global_df, get_metadata_df
 from netflix.utils.helpers import read_css
-from netflix.utils.constants import STYLES_PATH
-
+from netflix.utils.constants import STYLES_PATH, IMAGE_PATH
+import plotly.graph_objects as go
+import pandas as pd
 
 read_css(STYLES_PATH / "insights.css")
 
 df_global = get_global_df()
 df_metadata = get_metadata_df()
+
+# st.image(str(IMAGE_PATH / "Logga_Streamly.png"), width=150)
+# st.caption("Global Netflix viewing statistics")
+# st.divider()
 
 st.title("Compare titles")
 st.caption("Select two titles to compare side by side")
@@ -108,7 +113,65 @@ def get_stats(title):
         "global_weeks_in_top10": int(data["cumulative_weeks_in_top_10"].max()),
         "global_best_rank": int(data["weekly_rank"].min()),
         "global_avg_rank": round(data["weekly_rank"].mean()),
+        "chart_data": data[["week", "weekly_views", "weekly_rank"]].sort_values("week"),
     }
+
+
+def show_views_chart(stats_left, stats_right, title_left, title_right):
+    """Visar line chart med weekly views över tid för båda titlarna"""
+
+    # Datat har inte rätt format så fixar det med lite cleaning
+    stats_left["chart_data"]["week"] = pd.to_datetime(stats_left["chart_data"]["week"])
+    stats_right["chart_data"]["week"] = pd.to_datetime(
+        stats_right["chart_data"]["week"]
+    )
+
+    x_min = max(
+        stats_left["chart_data"]["week"].min(), stats_right["chart_data"]["week"].min()
+    )
+    x_max = max(
+        stats_left["chart_data"]["week"].max(), stats_right["chart_data"]["week"].max()
+    )
+
+    # go.Figure() -> skapar en tom canvas för att rita grafer
+    fig_views = go.Figure()
+
+    if (
+        stats_left is not None
+    ):  # Detta för att motverka att det kraschar om titeln inte finns
+
+        fig_views.add_trace(
+            go.Scatter(
+                x=stats_left["chart_data"]["week"],
+                y=stats_left["chart_data"]["weekly_views"],
+                name=title_left.title(),
+                line=dict(color="#F7B952", width=2),
+            )
+        )
+
+    if stats_right is not None:
+        fig_views.add_trace(
+            go.Scatter(
+                x=stats_right["chart_data"]["week"],
+                y=stats_right["chart_data"]["weekly_views"],
+                name=title_right.title(),
+                line=dict(color="#E8622A", width=2),
+            )
+        )
+
+    fig_views.update_layout(
+        title="Views over time",
+        paper_bgcolor="#0F0D08",  # Streamly bakgrund som matchar appen
+        plot_bgcolor="#1A1612",  # Streamly sekundär, grafensyta
+        font=dict(color="#F5F0E8"),  # Vit text
+        xaxis=dict(
+            title="", range=[x_min.strftime("%Y-%m-%d"), x_max.strftime("%Y-%m-%d")]
+        ),
+        yaxis=dict(title=""),
+        legend=dict(bgcolor="#2A2118"),  # Mörk legend-bakgrund
+    )
+    # Visar grafen med full bred (use_container_width)
+    st.plotly_chart(fig_views, use_container_width=True)
 
 
 if title_left:
@@ -121,3 +184,5 @@ if title_right:
     meta_right = get_metadata(title_right)
     stats_right = get_stats(title_right)
     show_title_card(col_right, title_right, meta_right, stats_right)
+
+    show_views_chart(stats_left, stats_right, title_left, title_right)
