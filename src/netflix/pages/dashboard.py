@@ -1,8 +1,9 @@
+import matplotlib.pyplot as plt
+import pandas as pd
 import streamlit as st
 from netflix.components.visuals import russia_line_chart
 from netflix.utils.constants import STYLES_PATH
-import matplotlib.pyplot as plt
-from netflix.utils.helpers import show_banner, get_russia_kpi, get_country_df, read_css, separation_band
+from netflix.utils.helpers import show_banner, get_country_df, read_css
 
 
 # --- Loaded css was needed here ---
@@ -47,7 +48,7 @@ category = st.radio(
 )
 
 
-# Values in the center of the cards
+# --- Values in the center of the cards ---
 st.markdown("""
     <style>
         [data-testid="stMetric"] {
@@ -71,8 +72,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# Getting all the calculated numbers
-#get_russia_kpi(category)
+# --- Getting all the calculated numbers ---
 kpi = get_russia_kpi(category)
  
 col1, col2, col3, col4 = st.columns(4)
