@@ -11,9 +11,11 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
+from netflix.components.author_credit import render_author_credit
 from netflix.components.branding import render_page_header, render_streamly_banner
 from netflix.components.home_summary import render_home_summary
 from netflix.components.filters import render_labeled_selectbox
+from netflix.components.footer import render_disclaimer_footer
 from netflix.components.visuals import make_country_choropleth
 from netflix.utils.constants import STYLES_PATH
 from netflix.utils.helpers import get_weekly_df, read_css
@@ -434,6 +436,7 @@ def render_section_heading(title: str, subtitle: str) -> None:
     )
 
 
+
 def render_filters(weekly_df: pd.DataFrame) -> tuple[str, int, str, str]:
     """Render the Country Insights filter row."""
     st.markdown('<div class="streamly-filter-section">', unsafe_allow_html=True)
@@ -489,6 +492,7 @@ def country_insights() -> None:
     weekly_df = prepare_country_insights_data()
     if weekly_df.empty:
         st.warning("No weekly country data is available for Country Insights.")
+        render_disclaimer_footer()
         return
 
     selected_country, selected_year, selected_month, selected_category = render_filters(
@@ -497,6 +501,7 @@ def country_insights() -> None:
 
     if not selected_month:
         st.warning("No month is available for the selected country and year.")
+        render_disclaimer_footer()
         return
 
     top10_df = build_country_top10_chart_df(
@@ -509,6 +514,7 @@ def country_insights() -> None:
 
     if top10_df.empty:
         st.warning("No titles found for the selected filters.")
+        render_disclaimer_footer()
         return
 
     map_col, donut_col = st.columns([1.15, 1], gap="large")
@@ -600,5 +606,8 @@ def country_insights() -> None:
                 use_container_width=True,
             )
             
+        render_author_credit()
+        
+    render_disclaimer_footer()
 if __name__ == "__main__":
     country_insights()

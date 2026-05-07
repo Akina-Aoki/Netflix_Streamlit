@@ -4,9 +4,11 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from netflix.components.author_credit import render_author_credit
 from netflix.components.branding import render_page_header, render_streamly_banner
 from netflix.components.cards import render_story_card
 from netflix.components.filters import render_labeled_selectbox
+from netflix.components.footer import render_disclaimer_footer
 from netflix.utils.constants import STYLES_PATH
 from netflix.utils.helpers import get_weekly_df, read_css
 
@@ -513,8 +515,6 @@ def _render_success_filters(df: pd.DataFrame) -> tuple[str, int, str, str]:
     return country, year, month, category
 
 
-
-
 def success_profile() -> None:
     """Render the Success Profile page."""
     css_path = STYLES_PATH / "dashboard.css"
@@ -536,10 +536,12 @@ def success_profile() -> None:
             "Success Profile cannot render because these required columns are missing: "
             f"{weekly_df['_missing_columns'].iloc[0]}"
         )
+        render_disclaimer_footer()
         return
 
     if weekly_df.empty:
         st.warning("No weekly data available.")
+        render_disclaimer_footer()
         return
 
     country, year, month, category = _render_success_filters(weekly_df)
@@ -554,6 +556,7 @@ def success_profile() -> None:
 
     if profile_df.empty:
         st.warning("No data available for the selected filters.")
+        render_disclaimer_footer()
         return
 
     if mode == "relaxed":
@@ -564,6 +567,9 @@ def success_profile() -> None:
 
     fig = build_success_profile_figure(profile_df)
     st.plotly_chart(fig, use_container_width=True)
+
+    render_author_credit()
+    render_disclaimer_footer()
 
 
 if __name__ == "__main__":
