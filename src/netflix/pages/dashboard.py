@@ -5,6 +5,7 @@ from netflix.components.visuals import russia_line_chart
 from netflix.utils.constants import STYLES_PATH
 from netflix.utils.helpers import get_country_df, read_css
 from netflix.components.branding import render_streamly_banner
+from netflix.components.footer import render_disclaimer_footer
 
 
 # --- For Russias KPIs using unique "shows" (film and series) --
@@ -219,3 +220,5 @@ st.markdown("""
         Money Heist dominated Russia's top 10 for 35 weeks — more than double any other series.
     </p>
 """, unsafe_allow_html=True)
+
+render_disclaimer_footer()

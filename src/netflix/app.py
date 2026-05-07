@@ -25,7 +25,7 @@ pages = [
     st.Page("pages/country_insights.py", title="🏠Country Insights Home"),
     st.Page("pages/insights.py", title="⭐Best Movie and Serie"),
     st.Page("pages/success_profile.py", title="⭐ Success Profile"),
-    st.Page("pages/dashboard.py", title="📊Dashboard"),
+    st.Page("pages/dashboard.py", title="🔎 Russia: A Data Story"),
 ]
 
 pg = st.navigation(pages)

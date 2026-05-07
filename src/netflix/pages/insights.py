@@ -4,6 +4,7 @@ from netflix.utils.helpers import read_css
 from netflix.utils.constants import STYLES_PATH, IMAGE_PATH
 from netflix.components.footer import render_disclaimer_footer
 import plotly.graph_objects as go
+
 import pandas as pd
 
 st.image(str(IMAGE_PATH / "Logga_Streamly.png"), width=200)
@@ -11,6 +12,7 @@ st.caption("Global Netflix viewing statistics")
 st.divider()
 
 read_css(STYLES_PATH / "insights.css")
+
 
 df_global = get_global_df()
 df_metadata = get_metadata_df()
@@ -168,7 +170,6 @@ if title_left:
     meta_left = get_metadata(title_left)
     stats_left = get_stats(title_left)
     show_title_card(col_left, title_left, meta_left, stats_left)
-
 
 if title_right:
     meta_right = get_metadata(title_right)
