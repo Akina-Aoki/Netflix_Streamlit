@@ -7,12 +7,9 @@ import plotly.graph_objects as go
 
 import pandas as pd
 
-<<<<<<< HEAD
 st.image(str(IMAGE_PATH / "Logga_Streamly.png"), width=200)
 st.caption("Global Netflix viewing statistics")
 st.divider()
-=======
->>>>>>> 943b96fd9be0243ce9228c5eb81218890b06f6c3
 
 read_css(STYLES_PATH / "insights.css")
 
