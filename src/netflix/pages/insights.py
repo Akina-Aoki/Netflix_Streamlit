@@ -5,6 +5,7 @@ from netflix.utils.constants import STYLES_PATH, IMAGE_PATH
 import plotly.graph_objects as go
 import pandas as pd
 
+
 read_css(STYLES_PATH / "insights.css")
 
 df_global = get_global_df()

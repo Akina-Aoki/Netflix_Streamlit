@@ -11,6 +11,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
+from netflix.components.author_credit import render_author_credit
 from netflix.components.branding import render_page_header, render_streamly_banner
 from netflix.components.home_summary import render_home_summary
 from netflix.components.filters import render_labeled_selectbox
@@ -434,6 +435,7 @@ def render_section_heading(title: str, subtitle: str) -> None:
     )
 
 
+
 def render_filters(weekly_df: pd.DataFrame) -> tuple[str, int, str, str]:
     """Render the Country Insights filter row."""
     st.markdown('<div class="streamly-filter-section">', unsafe_allow_html=True)
@@ -600,5 +602,6 @@ def country_insights() -> None:
                 use_container_width=True,
             )
             
+        render_author_credit()
 if __name__ == "__main__":
     country_insights()
