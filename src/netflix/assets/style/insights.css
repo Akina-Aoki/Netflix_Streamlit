@@ -1,11 +1,9 @@
-/* fast höjd på poster-bilder, bara för insight-sidan */
-
-[data-testid="stImage"] img{
+/* fast höjd på poster-bilder */
+[data-testid="stImage"] img {
     height: 350px !important;
     width: 233px !important;
     object-fit: cover !important;
 }
-
 
 /* Ram för KPI-korten */
 [data-testid="stMetric"] {
@@ -14,5 +12,19 @@
     border-radius: 8px;
     padding: 1rem;
     text-align: center;
-    text-align: center;
+}
+
+/* KPI värde */
+[data-testid="stMetricValue"] {
+    color: #f5f0e8 !important;
+    font-size: 2.5rem !important;
+    font-weight: 500 !important;
+    text-align: center !important;
+}
+
+/* KPI label */
+[data-testid="stMetricLabel"] {
+    color: #9E9689 !important;
+    font-size: 0.9rem !important;
+    text-align: center !important;
 }
