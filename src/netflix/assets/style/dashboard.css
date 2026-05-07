@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap');
+
 :root {
   --bg: #0F0D0B;
   --card: #1A1612;
@@ -108,4 +110,637 @@ label[data-testid="stWidgetLabel"] p {
   color: #9E9689;
   font-size: 0.9rem;
   margin-bottom: 1rem;
+}
+
+/* Success Profile page --------------------------------------------------- */
+.success-shell {
+  font-family: "Segoe UI", sans-serif;
+}
+
+.success-brand-block {
+  margin: 0.25rem 0 1rem;
+}
+
+.success-brand-block img {
+  max-width: 150px;
+}
+
+.success-brand-name {
+  color: var(--yellow);
+  font-size: 2.4rem;
+  font-weight: 800;
+  line-height: 1;
+  margin: 0;
+}
+
+.success-brand-subtitle {
+  color: var(--muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.22em;
+  margin: 0.35rem 0 0;
+  text-transform: uppercase;
+}
+
+.success-divider {
+  border-top: 1px solid var(--border);
+  margin: 1.25rem 0 1.5rem;
+}
+
+.success-hero,
+.success-explainer-card,
+.success-filter-card,
+.success-chart-card {
+  background:
+    linear-gradient(135deg, rgba(247, 185, 82, 0.08), rgba(232, 98, 42, 0.04)),
+    var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.25);
+  margin-bottom: 1rem;
+  padding: 1.2rem 1.35rem;
+}
+
+.success-hero {
+  border-left: 4px solid var(--yellow);
+  padding: 1.5rem 1.6rem;
+}
+
+.success-eyebrow,
+.success-section-title,
+.success-kpi-label {
+  color: var(--amber);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  margin: 0 0 0.45rem;
+  text-transform: uppercase;
+}
+
+.success-hero h1 {
+  color: var(--text);
+  font-size: clamp(2rem, 4vw, 3.6rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  margin: 0 0 0.4rem;
+}
+
+.success-hero h2 {
+  color: var(--yellow);
+  font-size: 1.2rem;
+  font-weight: 650;
+  margin: 0 0 0.75rem;
+}
+
+.success-hero p,
+.success-section-subtitle {
+  color: var(--muted);
+  font-size: 1.02rem;
+  line-height: 1.55;
+  margin: 0;
+  max-width: 860px;
+}
+
+.success-kpi-grid {
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0.2rem 0 1rem;
+}
+
+.success-kpi-card {
+  background:
+    radial-gradient(circle at top right, rgba(255, 184, 77, 0.16), transparent 38%),
+    var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1rem 1.1rem;
+}
+
+.success-kpi-label {
+  color: var(--muted);
+  font-size: 0.72rem;
+  margin-bottom: 0.35rem;
+}
+
+.success-kpi-value {
+  color: var(--text);
+  font-size: clamp(1.45rem, 2.2vw, 2rem);
+  font-weight: 800;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.success-explainer-card {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 1fr);
+}
+
+.segment-pill-row {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.segment-pill {
+  align-items: flex-start;
+  background: rgba(15, 13, 11, 0.64);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.72rem 1rem;
+}
+
+.segment-pill strong {
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.segment-pill span {
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.35;
+}
+
+.segment-pill-evergreen {
+  border-color: rgba(247, 185, 82, 0.55);
+}
+
+.segment-pill-blockbuster {
+  border-color: rgba(232, 98, 42, 0.6);
+}
+
+.segment-pill-hype {
+  border-color: rgba(255, 184, 77, 0.45);
+}
+
+.success-filter-card,
+.success-chart-card {
+  margin-top: 0.25rem;
+  margin-bottom: 0.75rem;
+  padding: 1rem 1.15rem;
+}
+
+.success-chart-card {
+  border-left: 4px solid var(--orange);
+  margin-top: 1.25rem;
+}
+
+@media (max-width: 900px) {
+  .success-kpi-grid,
+  .success-explainer-card {
+    grid-template-columns: 1fr;
+  }
+
+}
+/* Shared Streamly Home + Success Profile UI ------------------------------- */
+:root {
+  --streamly-bg: #0F0D0B;
+  --streamly-card: #1A1612;
+  --streamly-surface: #2A2118;
+  --streamly-border: #2A2118;
+  --streamly-primary: #F7B952;
+  --streamly-orange: #E8622A;
+  --streamly-amber: #FFB84D;
+  --streamly-text: #F5F0E8;
+  --streamly-muted: #9E9689;
+  --streamly-green: #2A9D8F;
+  --streamly-red: #E63946;
+}
+
+.streamly-banner {
+  margin-top: 0.2rem;
+}
+
+.streamly-logo-fallback {
+  color: var(--streamly-primary);
+  font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 0.2rem;
+}
+
+.streamly-brand-caption {
+  color: var(--streamly-muted);
+  font-family: "Inter", Arial, sans-serif;
+  font-size: 0.95rem;
+  margin-top: -0.25rem;
+  margin-bottom: 1.1rem;
+}
+
+.streamly-divider {
+  background: var(--streamly-surface);
+  height: 1px;
+  margin: 0 0 1.8rem 0;
+}
+
+.streamly-page-header {
+  margin-top: 0.2rem;
+  margin-bottom: 0.4rem;
+}
+
+.streamly-page-title {
+  color: var(--streamly-primary);
+  font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  font-size: 3.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+  margin: 0;
+}
+
+.streamly-page-subtitle {
+  color: var(--streamly-text);
+  font-family: "Inter", Arial, sans-serif;
+  font-size: 1.08rem;
+  font-weight: 600;
+  margin-top: 0.55rem;
+  margin-bottom: 1rem;
+}
+
+.home-kpi-card {
+  background:
+    radial-gradient(circle at top right, rgba(247, 185, 82, 0.15), transparent 42%),
+    linear-gradient(180deg, var(--streamly-card) 0%, #17120E 100%);
+  border: 1px solid var(--streamly-border);
+  border-radius: 16px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  margin: 1.4rem 0;
+  min-height: 135px;
+  padding: 1rem 1.05rem;
+}
+
+.home-kpi-card:hover {
+  border-color: var(--streamly-primary);
+  transform: translateY(-1px);
+  transition: 0.18s ease;
+}
+
+.home-kpi-label {
+  color: var(--streamly-amber);
+  font-family: "Inter", Arial, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  margin-bottom: 0.65rem;
+  text-transform: uppercase;
+}
+
+.home-kpi-value {
+  color: var(--streamly-text);
+  font-family: "Inter", Arial, sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.05;
+  margin-bottom: 0.45rem;
+}
+
+.home-kpi-note {
+  color: var(--streamly-muted);
+  font-family: "Inter", Arial, sans-serif;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.home-about-card {
+  background:
+    linear-gradient(135deg, rgba(247, 185, 82, 0.10), rgba(232, 98, 42, 0.04)),
+    var(--streamly-card);
+  border: 1px solid var(--streamly-border);
+  border-left: 4px solid var(--streamly-orange);
+  border-radius: 18px;
+  margin: 1.3rem 0 1.6rem 0;
+  padding: 1.25rem 1.35rem;
+}
+
+.home-about-card-default {
+  border-left-color: var(--streamly-primary);
+}
+
+.home-about-card-amber {
+  border-left-color: var(--streamly-amber);
+}
+
+.home-about-card-orange {
+  border-left-color: var(--streamly-orange);
+}
+
+.home-about-card-green {
+  border-left-color: var(--streamly-green);
+}
+
+.home-about-card-red {
+  border-left-color: var(--streamly-red);
+}
+
+.home-about-eyebrow {
+  color: var(--streamly-amber);
+  font-family: "Inter", Arial, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+
+.home-about-title {
+  color: var(--streamly-text);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 0.65rem;
+}
+
+.home-about-body {
+  color: var(--streamly-muted);
+  font-family: "Inter", Arial, sans-serif;
+  font-size: 1rem;
+  line-height: 1.55;
+  max-width: 980px;
+}
+
+.home-about-body a {
+  border-bottom: 1px solid rgba(247, 185, 82, 0.55);
+  color: var(--streamly-primary);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.home-section-title {
+  color: var(--streamly-primary);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 2.6rem;
+  font-weight: 700;
+  line-height: 1;
+  margin: 1.4rem 0 0.35rem 0;
+}
+
+.home-section-subtitle {
+  color: var(--streamly-text);
+  font-family: "Inter", Arial, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.home-disclaimer {
+  color: var(--streamly-muted);
+  font-family: "Inter", Arial, sans-serif;
+  font-size: 0.9rem;
+  margin-bottom: 1.25rem;
+}
+
+.streamly-filter-section,
+.home-filter-section,
+.sp-filter-section {
+  margin-top: 1.8rem;
+  margin-bottom: 1.25rem;
+}
+
+.streamly-filter-section-sp,
+.sp-filter-section {
+  margin-top: 2.1rem;
+  margin-bottom: 0.9rem;
+}
+
+.streamly-filter-label,
+.home-filter-label,
+.sp-filter-label {
+  color: var(--streamly-orange);
+  font-family: "Inter", Arial, sans-serif;
+  font-size: 0.86rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  margin-bottom: 0.45rem;
+  text-transform: uppercase;
+}
+
+/* Hide Streamlit's default selectbox labels because custom labels are rendered. */
+div[data-testid="stSelectbox"] label {
+  display: none;
+}
+
+/* Streamly-style select boxes shared by Home and Success Profile. */
+div[data-baseweb="select"] > div {
+  background: linear-gradient(180deg, #2A2118 0%, #1A1612 100%) !important;
+  border: 1px solid #3A2B1D !important;
+  border-radius: 999px !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 0 0 1px rgba(247, 185, 82, 0.06) !important;
+  color: var(--streamly-text) !important;
+  min-height: 44px !important;
+}
+
+div[data-baseweb="select"] > div:hover {
+  border-color: var(--streamly-primary) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 0 0 1px rgba(247, 185, 82, 0.25) !important;
+}
+
+div[data-baseweb="select"] span {
+  color: var(--streamly-text) !important;
+  font-family: "Inter", Arial, sans-serif !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+}
+
+div[data-baseweb="select"] svg {
+  color: var(--streamly-amber) !important;
+  fill: var(--streamly-amber) !important;
+}
+
+div[data-baseweb="popover"] {
+  background: var(--streamly-card) !important;
+  color: var(--streamly-text) !important;
+}
+
+ul[role="listbox"] {
+  background: var(--streamly-card) !important;
+  border: 1px solid var(--streamly-surface) !important;
+}
+
+li[role="option"] {
+  background: var(--streamly-card) !important;
+  color: var(--streamly-text) !important;
+  font-family: "Inter", Arial, sans-serif !important;
+}
+
+li[role="option"]:hover {
+  background: var(--streamly-surface) !important;
+  color: var(--streamly-primary) !important;
+}
+
+.sp-card {
+  background: linear-gradient(180deg, var(--streamly-card) 0%, #17120E 100%);
+  border: 1px solid var(--streamly-surface);
+  border-radius: 14px;
+  border-top: 4px solid var(--streamly-primary);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  min-height: 140px;
+  padding: 0.95rem 1rem 1rem 1rem;
+}
+
+.sp-card-title {
+  color: var(--streamly-primary);
+  font-family: "Inter", Arial, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.55rem;
+  text-transform: uppercase;
+}
+
+.sp-card-body {
+  color: var(--streamly-text);
+  font-family: "Inter", Arial, sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.sp-card-default,
+.sp-card-metric {
+  border-top-color: var(--streamly-primary);
+}
+
+.sp-card-amber,
+.sp-card-balanced {
+  border-top-color: var(--streamly-amber);
+}
+
+.sp-card-orange {
+  border-top-color: var(--streamly-orange);
+}
+
+.sp-card-green,
+.sp-card-retention {
+  border-top-color: var(--streamly-green);
+}
+
+.sp-card-red,
+.sp-card-hype {
+  border-top-color: var(--streamly-red);
+}
+
+.sp-card-title-default,
+.sp-metric-title {
+  color: var(--streamly-primary);
+}
+
+.sp-card-title-amber,
+.sp-balanced-title {
+  color: var(--streamly-amber);
+}
+
+.sp-card-title-orange {
+  color: var(--streamly-orange);
+}
+
+.sp-card-title-green,
+.sp-retention-title {
+  color: var(--streamly-green);
+}
+
+.sp-card-title-red,
+.sp-hype-title {
+  color: var(--streamly-red);
+}
+
+
+/* Country Insights page --------------------------------------------------- */
+.country-card-heading {
+  margin-bottom: 1rem;
+}
+
+.country-card-title {
+  color: var(--streamly-primary);
+  font-family: "Inter", Arial, sans-serif;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+}
+
+.country-selector-title {
+  margin-bottom: 0.65rem;
+}
+
+.country-card-subtitle {
+  color: var(--streamly-muted);
+  font-family: "Inter", Arial, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+.country-donut-stat {
+  background: linear-gradient(180deg, var(--streamly-card) 0%, #17120E 100%);
+  border: 1px solid var(--streamly-border);
+  border-radius: 14px;
+  margin-bottom: 0.75rem;
+  padding: 0.85rem 1rem;
+}
+
+.country-donut-stat span {
+  color: var(--streamly-muted);
+  display: block;
+  font-family: "Inter", Arial, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.country-donut-stat strong {
+  color: var(--streamly-primary);
+  display: block;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-top: 0.4rem;
+}
+
+.country-section-heading {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.country-section-title {
+  color: var(--streamly-primary);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 2.6rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 0.35rem;
+}
+
+.country-section-subtitle {
+  color: var(--streamly-text);
+  font-family: "Inter", Arial, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.country-trend-note {
+  background:
+    linear-gradient(135deg, rgba(247, 185, 82, 0.08), rgba(232, 98, 42, 0.04)),
+    var(--streamly-card);
+  border: 1px solid var(--streamly-border);
+  border-left: 4px solid var(--streamly-primary);
+  border-radius: 16px;
+  color: var(--streamly-muted);
+  font-family: "Inter", Arial, sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+  padding: 1rem 1.15rem;
 }
